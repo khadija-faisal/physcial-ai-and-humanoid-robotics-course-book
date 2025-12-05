@@ -94,6 +94,9 @@ A learner prefers Urdu and wants to read the same chapter in their native langua
 - How does the system handle when a learner selects text that spans multiple chapters or sub-sections?
 - What happens if a learner's internet connection drops during chatbot interaction—are responses cached?
 - How does the platform handle concurrent edits to curriculum content while learners are reading?
+- What happens if a chapter markdown file has malformed frontmatter or missing required fields?
+- How does Docusaurus handle when a chapter file is moved between modules mid-deployment?
+- How are code blocks with syntax highlighting handled if unsupported languages are used?
 
 ## Requirements *(mandatory)*
 
@@ -147,10 +150,22 @@ A learner prefers Urdu and wants to read the same chapter in their native langua
 - **FR-031**: FastAPI backend MUST be deployed to a cloud service (Render, Fly.io, Railway, or similar) with public API endpoints.
 - **FR-032**: Both frontend and backend MUST be accessible without errors for the duration of the demo.
 
+#### Docusaurus Site Organization
+- **FR-033**: Docusaurus site directory structure MUST follow: `docs/module-01/` through `docs/module-04/`, with each module containing chapter files named `chapter-01.md`, `chapter-02.md`, etc.
+- **FR-034**: Each chapter markdown file MUST include frontmatter with: `title`, `learning_outcomes` (array), `week_number`, `proficiency_level`, `prerequisites`, and `tags` (array).
+- **FR-035**: Docusaurus sidebar configuration (`sidebars.js`) MUST auto-generate module and chapter navigation from directory structure.
+- **FR-036**: Each chapter MUST be deployable to GitHub Pages with automatic rebuilds triggered by git push to main/master branch.
+- **FR-037**: Docusaurus site MUST include a searchable documentation index covering all chapters and learning outcomes.
+- **FR-038**: Chapter content MUST support embedded code blocks (with syntax highlighting) and diagrams/images stored in `docs/assets/` subdirectories.
+- **FR-039**: Docusaurus configuration MUST define a custom CSS theme matching Physical AI & Humanoid Robotics branding (dark/light mode support).
+- **FR-040**: Each chapter page MUST display a persistent RAG chatbot widget in a sidebar, maintaining selected-text context.
+- **FR-041**: Chapter markdown MUST support custom admonitions (callouts) for labs, exercises, and safety notices (e.g., `:::tip`, `:::lab`, `:::warning`).
+- **FR-042**: Docusaurus site MUST include metadata about module progress (e.g., "Chapter 3 of 5 in Module 2") visible to learners.
+
 #### Reusable Skills
-- **FR-033**: Text chunking logic MUST be extracted as a reusable Skill (stored in `/skills/`).
-- **FR-034**: Chatbot context matching logic MUST be extracted as a reusable Skill.
-- **FR-035**: Skills MUST include documentation on usage and integration.
+- **FR-043**: Text chunking logic MUST be extracted as a reusable Skill (stored in `/skills/`).
+- **FR-044**: Chatbot context matching logic MUST be extracted as a reusable Skill.
+- **FR-045**: Skills MUST include documentation on usage and integration.
 
 ### Key Entities
 
@@ -175,6 +190,67 @@ A learner prefers Urdu and wants to read the same chapter in their native langua
 - **SC-008**: Text chunking and context matching logic are extracted and documented as reusable Skills in `/skills/`.
 - **SC-009**: At least 3 chapters demonstrate multi-level content (Beginner, Intermediate, Advanced versions present).
 - **SC-010**: Urdu translation functionality works for at least 2 chapters (bonus feature demonstrator).
+- **SC-011**: All 13 chapter markdown files follow Docusaurus frontmatter template with required fields: title, learning_outcomes, week_number, module_number, prerequisites, tags.
+- **SC-012**: Docusaurus sidebar navigation correctly displays all 4 modules and 13 chapters in collapsible structure.
+- **SC-013**: Breadcrumb navigation displays correctly on every chapter page (e.g., "Docs > Module 1 > Chapter 1").
+- **SC-014**: Search functionality returns accurate results when searching for chapter titles, learning outcomes, and tags.
+- **SC-015**: GitHub Pages deployment completes without errors on every git push; site loads in under 3 seconds.
+
+## Docusaurus Site Organization & Structure
+
+### Directory Layout
+```
+docs/
+├── module-01/
+│   ├── chapter-01.md     (Weeks 1-2: Physical AI & Sensors)
+│   └── chapter-02.md
+├── module-02/
+│   ├── chapter-03.md     (Weeks 3-5: ROS 2 Fundamentals)
+│   ├── chapter-04.md
+│   └── chapter-05.md
+├── module-03/
+│   ├── chapter-06.md     (Weeks 6-10: Gazebo & Isaac Sim)
+│   ├── chapter-07.md
+│   ├── chapter-08.md
+│   ├── chapter-09.md
+│   └── chapter-10.md
+├── module-04/
+│   ├── chapter-11.md     (Weeks 11-13: VLA & Capstone)
+│   ├── chapter-12.md
+│   └── chapter-13.md
+├── assets/
+│   ├── diagrams/
+│   ├── images/
+│   ├── code-samples/
+│   └── screenshots/
+├── intro.md              (Welcome/Overview)
+└── docusaurus.config.js  (Docusaurus configuration)
+```
+
+### Chapter Frontmatter Template
+Each chapter markdown file MUST begin with YAML frontmatter:
+```yaml
+---
+title: "Chapter 1: Introduction to Physical AI"
+learning_outcomes:
+  - Understand Physical AI fundamentals
+  - Identify key sensors in robotics
+  - Apply Physical AI concepts to real-world scenarios
+week_number: 1
+module_number: 1
+proficiency_level: ["Beginner", "Intermediate", "Advanced"]
+prerequisites:
+  - Basic understanding of robotics (or link to prerequisite chapter)
+tags: ["physical-ai", "sensors", "robotics"]
+authors: ["Author Name"]
+last_updated: "2025-12-06"
+---
+```
+
+### Sidebar Navigation Configuration
+- `sidebars.js` MUST define sidebar structure mapping modules → chapters
+- Sidebar MUST support collapsible module sections
+- Breadcrumb navigation MUST show: "Module X > Chapter Y"
 
 ## Assumptions
 
@@ -186,6 +262,8 @@ A learner prefers Urdu and wants to read the same chapter in their native langua
 6. **Single Language MVP**: English is the primary language. Urdu translation is bonus; auto-translation service (e.g., Google Translate API) is acceptable.
 7. **No Custom LLM**: The chatbot uses OpenAI's API (ChatGPT); no custom fine-tuning in MVP scope.
 8. **Deterministic Chunking**: Text is chunked using a fixed algorithm (e.g., sliding window with overlap); ML-based dynamic chunking is out of scope.
+9. **Docusaurus Version**: Docusaurus v3.x is the base version (or current stable); all configuration follows v3 standards.
+10. **GitHub Pages Workflow**: GitHub Actions workflow for auto-deploy to GitHub Pages is pre-configured or will be set up separately.
 
 ## Out of Scope (Explicitly Excluded)
 

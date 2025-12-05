@@ -1,6 +1,6 @@
 ---
 id: 001
-title: Create RAG platform specification
+title: Create Physical AI & Humanoid Robotics platform specification
 stage: spec
 date: 2025-12-06
 surface: agent
@@ -55,7 +55,7 @@ Based on the 'constitution.md' , create a detailed Specification.
 
 ## Response snapshot
 
-Created comprehensive specification for AI-Native Learning Platform with Embedded RAG Chatbot:
+Created comprehensive specification for Physical AI & Humanoid Robotics Learning Platform with Embedded RAG Chatbot:
 
 - **Feature Branch**: 1-rag-platform
 - **Spec File**: specs/1-rag-platform/spec.md (13 sections, 35 FRs, 5 prioritized user stories)

@@ -1,9 +1,9 @@
-# Feature Specification: AI-Native Learning Platform with Embedded RAG Chatbot
+# Feature Specification: Physical AI & Humanoid Robotics Learning Platform with Embedded RAG Chatbot
 
 **Feature Branch**: `1-rag-platform`
 **Created**: 2025-12-06
 **Status**: Draft
-**Input**: Build an AI-native platform with Docusaurus for documentation and Embedded RAG Chatbot covering 13-week Physical AI & Humanoid Robotics curriculum.
+**Input**: Build a Physical AI & Humanoid Robotics platform with Docusaurus for documentation and Embedded RAG Chatbot covering 13-week curriculum.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -208,7 +208,7 @@ A learner prefers Urdu and wants to read the same chapter in their native langua
 - **Cloud Hosting** (Render/Fly.io/Railway): For FastAPI backend.
 
 ### Internal Dependencies
-- Constitution principles (Educational Clarity, Embodied Intelligence, AI-Native Interaction, Technical Accuracy, Safety).
+- Constitution principles (Educational Clarity, Embodied Intelligence, Physical AI & Humanoid Robotics Interaction, Technical Accuracy, Safety).
 - Spec-Kit Plus methodology (Specs, Plans, Tasks, PHRs, ADRs).
 
 ---

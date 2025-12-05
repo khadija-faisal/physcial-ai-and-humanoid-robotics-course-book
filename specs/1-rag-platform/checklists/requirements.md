@@ -1,4 +1,4 @@
-# Specification Quality Checklist: AI-Native Learning Platform with Embedded RAG Chatbot
+# Specification Quality Checklist: Physical AI & Humanoid Robotics Learning Platform with Embedded RAG Chatbot
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2025-12-06

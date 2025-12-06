@@ -49,4 +49,4 @@ Start with **Module 1: Foundations** to understand embodied intelligence and sen
 
 ## Next Steps
 
-Ready to begin? Start with [Module 1: Foundations](/docs/module-01-physical-ai/week-01-intro).
+Ready to begin? Start with [Module 1: Foundations](/docs/module-01-foundations/week-01).

@@ -2,29 +2,66 @@
  * Any CSS included here will be global. The classic template
  * bundles Infima by default. Infima is a CSS framework designed to
  * work well for content-centric websites.
+ *
+ * Modern Navy Blue, White, & Black Palette
  */
 
-/* You can override the default Infima variables here. */
+/* Navy Blue Theme - Light Mode */
 :root {
-  --ifm-color-primary: #2e8555;
-  --ifm-color-primary-dark: #29784c;
-  --ifm-color-primary-darker: #277148;
-  --ifm-color-primary-darkest: #205d3b;
-  --ifm-color-primary-light: #33925d;
-  --ifm-color-primary-lighter: #359962;
-  --ifm-color-primary-lightest: #3cad6e;
+  --ifm-color-primary: #003366;
+  --ifm-color-primary-dark: #002855;
+  --ifm-color-primary-darker: #001f47;
+  --ifm-color-primary-darkest: #001538;
+  --ifm-color-primary-light: #0052cc;
+  --ifm-color-primary-lighter: #1a66ff;
+  --ifm-color-primary-lightest: #3d7fff;
+  --ifm-color-secondary: #1a1a2e;
+  --ifm-color-success: #06a77d;
+  --ifm-color-warning: #f59e0b;
+  --ifm-color-danger: #ef4444;
   --ifm-code-font-size: 95%;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  --docusaurus-highlighted-code-line-bg: rgba(0, 51, 102, 0.08);
 }
 
-/* For readability concerns, you should choose a lighter palette in dark mode. */
+/* Navy Blue Theme - Dark Mode */
 [data-theme='dark'] {
-  --ifm-color-primary: #25c2a0;
-  --ifm-color-primary-dark: #21af90;
-  --ifm-color-primary-darker: #1fa588;
-  --ifm-color-primary-darkest: #1a8870;
-  --ifm-color-primary-light: #29d5b0;
-  --ifm-color-primary-lighter: #32d8b4;
-  --ifm-color-primary-lightest: #4fddbf;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+  --ifm-color-primary: #4da6ff;
+  --ifm-color-primary-dark: #3d94ff;
+  --ifm-color-primary-darker: #2d82ff;
+  --ifm-color-primary-darkest: #1a66ff;
+  --ifm-color-primary-light: #6bb8ff;
+  --ifm-color-primary-lighter: #8dc7ff;
+  --ifm-color-primary-lightest: #afd9ff;
+  --ifm-color-secondary: #e8e8e8;
+  --ifm-color-success: #10b981;
+  --ifm-color-warning: #fbbf24;
+  --ifm-color-danger: #f87171;
+  --docusaurus-highlighted-code-line-bg: rgba(77, 166, 255, 0.1);
+}
+
+/* Fade-in Animation for Cards */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card {
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+.hero__title {
+  color: var(--ifm-color-primary);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.hero__subtitle {
+  color: var(--ifm-color-secondary);
+  font-size: 1.1rem;
 }

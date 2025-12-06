@@ -11,23 +11,31 @@ interface ModuleCard {
   title: string;
   link: string;
   description: string;
+  icon: string;
 }
 
 function HomepageHeader() {
   return (
-    <header className={clsx('hero hero--primary', styles.heroBanner)}>
-      <div className="container">
-        <Heading as="h1" className="hero__title">
-          Physical AI & Humanoid Robotics Textbook
+    <header className={clsx('hero hero--primary', styles.navyBannerHero)}>
+      <div className={styles.heroBg}></div>
+      <div className="container" style={{position: 'relative', zIndex: 1}}>
+        <Heading as="h1" className={styles.heroTitle}>
+          Physical AI & Humanoid Robotics
         </Heading>
-        <p className="hero__subtitle">
-          Master ROS 2, NVIDIA Isaac Sim, and VLA Systems.
+        <p className={styles.heroSubtitle}>
+          From ROS 2 to VLA Systems: Master embodied intelligence from simulation to physical robots
         </p>
         <div className={styles.buttons}>
           <Link
-            className="button button--secondary button--lg"
+            className={clsx('button button--lg', styles.ctaBtnPrimary)}
             to="/docs/intro">
-            Start Reading
+            Start Learning
+          </Link>
+          <Link
+            className={clsx('button button--lg', styles.ctaBtnSecondary)}
+            to="https://github.com/panaversity/physical-ai-humanoid-robotics-course-book"
+            target="_blank">
+            View on GitHub
           </Link>
         </div>
       </div>
@@ -38,24 +46,28 @@ function HomepageHeader() {
 function ModuleGrid() {
   const modules: ModuleCard[] = [
     {
-      title: 'Module 1: Foundations',
-      link: '/docs/module-01-physical-ai/week-01-intro',
-      description: 'Physical AI & Sensors',
+      title: 'Module 1: Robotic Nervous System',
+      link: '/docs/module-01-foundations/week-01',
+      description: 'Introduction to Physical AI, Embodied Intelligence, and Sensor Systems (LIDAR, IMU, Cameras)',
+      icon: '🧠',
     },
     {
-      title: 'Module 2: ROS 2',
-      link: '/docs/module-02-ros2/week-03-nodes',
-      description: 'ROS 2 Fundamentals',
+      title: 'Module 2: Digital Twin',
+      link: '/docs/module-02-ros2/week-03',
+      description: 'ROS 2 Fundamentals, URDF, Gazebo Physics Simulation, and Sensor Simulation',
+      icon: '🤖',
     },
     {
-      title: 'Module 3: Simulation',
-      link: '/docs/module-03-simulation/week-06-gazebo',
-      description: 'Gazebo & Isaac Sim',
+      title: 'Module 3: AI-Robot Brain',
+      link: '/docs/module-03-simulation/week-06',
+      description: 'NVIDIA Isaac Sim, Isaac ROS VSLAM, Navigation, and Reinforcement Learning',
+      icon: '⚡',
     },
     {
-      title: 'Module 4: Humanoids',
-      link: '/docs/module-04-humanoid/week-11-walking',
-      description: 'VLA & Capstone',
+      title: 'Module 4: Vision-Language-Action',
+      link: '/docs/module-04-humanoid/week-11',
+      description: 'Humanoid Locomotion, Voice Commands, Cognitive Planning, and Capstone Project',
+      icon: '🎯',
     },
   ];
 
@@ -63,7 +75,7 @@ function ModuleGrid() {
     <section className={styles.modulesSection}>
       <div className="container">
         <Heading as="h2" className={styles.sectionTitle}>
-          Curriculum Modules
+          Curriculum Overview
         </Heading>
         <div className={styles.moduleGrid}>
           {modules.map((module, idx) => (
@@ -71,6 +83,7 @@ function ModuleGrid() {
               key={idx}
               to={module.link}
               className={clsx(styles.moduleCard, 'card')}>
+              <div className={styles.moduleIcon}>{module.icon}</div>
               <div className={styles.moduleCardContent}>
                 <h3>{module.title}</h3>
                 <p>{module.description}</p>
@@ -88,7 +101,7 @@ export default function Home(): ReactNode {
   return (
     <Layout
       title={`${siteConfig.title}`}
-      description="Physical AI & Humanoid Robotics Learning Platform with Embedded RAG Chatbot">
+      description="A comprehensive 13-week textbook for teaching Physical AI and Humanoid Robotics with ROS 2, Gazebo, NVIDIA Isaac Sim, and Vision-Language-Action systems.">
       <HomepageHeader />
       <main>
         <ModuleGrid />

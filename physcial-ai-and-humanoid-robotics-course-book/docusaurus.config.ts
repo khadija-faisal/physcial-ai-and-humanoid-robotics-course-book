@@ -5,8 +5,8 @@ import type * as Preset from '@docusaurus/preset-classic';
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 const config: Config = {
-  title: 'My Site',
-  tagline: 'Dinosaurs are cool',
+  title: 'Physical AI & Humanoid Robotics',
+  tagline: 'From ROS 2 to VLA Systems',
   favicon: 'img/favicon.ico',
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
@@ -15,15 +15,15 @@ const config: Config = {
   },
 
   // Set the production url of your site here
-  url: 'https://your-docusaurus-site.example.com',
+  url: 'https://physical-ai-robotics.example.com',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: '/',
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'facebook', // Usually your GitHub org/user name.
-  projectName: 'docusaurus', // Usually your repo name.
+  organizationName: 'panaversity', // Usually your GitHub org/user name.
+  projectName: 'physical-ai-humanoid-robotics-course-book', // Usually your repo name.
 
   onBrokenLinks: 'throw',
 
@@ -75,9 +75,9 @@ const config: Config = {
       respectPrefersColorScheme: true,
     },
     navbar: {
-      title: 'My Site',
+      title: 'Physical AI & Humanoid Robotics',
       logo: {
-        alt: 'My Site Logo',
+        alt: 'Robotics Logo',
         src: 'img/logo.svg',
       },
       items: [
@@ -85,11 +85,10 @@ const config: Config = {
           type: 'docSidebar',
           sidebarId: 'tutorialSidebar',
           position: 'left',
-          label: 'Tutorial',
+          label: 'Curriculum',
         },
-        {to: '/blog', label: 'Blog', position: 'left'},
         {
-          href: 'https://github.com/facebook/docusaurus',
+          href: 'https://github.com/panaversity/physical-ai-humanoid-robotics-course-book',
           label: 'GitHub',
           position: 'right',
         },
@@ -99,11 +98,27 @@ const config: Config = {
       style: 'dark',
       links: [
         {
-          title: 'Docs',
+          title: 'Curriculum',
           items: [
             {
-              label: 'Tutorial',
+              label: 'Getting Started',
               to: '/docs/intro',
+            },
+            {
+              label: 'Module 1: ROS 2',
+              to: '/docs/module-01-foundations/week-01',
+            },
+            {
+              label: 'Module 2: Gazebo',
+              to: '/docs/module-02-ros2/week-03',
+            },
+            {
+              label: 'Module 3: Isaac Sim',
+              to: '/docs/module-03-simulation/week-06',
+            },
+            {
+              label: 'Module 4: VLA',
+              to: '/docs/module-04-humanoid/week-11',
             },
           ],
         },
@@ -111,34 +126,38 @@ const config: Config = {
           title: 'Community',
           items: [
             {
-              label: 'Stack Overflow',
-              href: 'https://stackoverflow.com/questions/tagged/docusaurus',
+              label: 'Panaversity',
+              href: 'https://panaversity.org',
             },
             {
-              label: 'Discord',
-              href: 'https://discordapp.com/invite/docusaurus',
+              label: 'GitHub Discussions',
+              href: 'https://github.com/panaversity/physical-ai-humanoid-robotics-course-book/discussions',
             },
             {
-              label: 'X',
-              href: 'https://x.com/docusaurus',
+              label: 'Report Issues',
+              href: 'https://github.com/panaversity/physical-ai-humanoid-robotics-course-book/issues',
             },
           ],
         },
         {
-          title: 'More',
+          title: 'Resources',
           items: [
             {
-              label: 'Blog',
-              to: '/blog',
+              label: 'ROS 2 Docs',
+              href: 'https://docs.ros.org/',
             },
             {
-              label: 'GitHub',
-              href: 'https://github.com/facebook/docusaurus',
+              label: 'NVIDIA Isaac',
+              href: 'https://developer.nvidia.com/isaac-sim',
+            },
+            {
+              label: 'GitHub Repository',
+              href: 'https://github.com/panaversity/physical-ai-humanoid-robotics-course-book',
             },
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} Panaversity. All rights reserved. Built with Docusaurus and ❤️ for robotics education.`,
     },
     prism: {
       theme: prismThemes.github,

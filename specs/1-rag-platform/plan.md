@@ -156,6 +156,101 @@ export default function Root({ children }) {
 
 ---
 
+## Docusaurus Project Structure & Configuration
+
+### Project Layout (TypeScript + Classic Preset)
+
+```
+physcial-ai-and-humanoid-robotics-course/
+├── docs/                                    # Documentation source
+│   ├── module-01/                           # Module 1: Physical AI & Sensors (Weeks 1-2)
+│   │   ├── _category_.json
+│   │   ├── chapter-01.md
+│   │   └── chapter-02.md
+│   ├── module-02/                           # Module 2: ROS 2 Fundamentals (Weeks 3-5)
+│   │   ├── _category_.json
+│   │   ├── chapter-03.md
+│   │   ├── chapter-04.md
+│   │   └── chapter-05.md
+│   ├── module-03/                           # Module 3: Gazebo & Isaac Sim (Weeks 6-10)
+│   │   ├── _category_.json
+│   │   ├── chapter-06.md through chapter-10.md
+│   ├── module-04/                           # Module 4: VLA & Capstone (Weeks 11-13)
+│   │   ├── _category_.json
+│   │   ├── chapter-11.md
+│   │   ├── chapter-12.md
+│   │   └── chapter-13.md
+│   ├── assets/
+│   │   ├── diagrams/
+│   │   ├── images/
+│   │   ├── code-samples/
+│   │   └── screenshots/
+│   └── intro.md
+├── src/
+│   ├── pages/
+│   │   └── index.tsx                        # Custom homepage with Module Cards
+│   ├── components/                          # React components (TypeScript)
+│   │   ├── TranslateBtn.tsx
+│   │   ├── PersonalizeBtn.tsx
+│   │   ├── ProficiencyWrapper.tsx
+│   │   └── ModuleCard.tsx
+│   ├── theme/                               # Swizzled Docusaurus components
+│   │   ├── Root.tsx                         # ChatKit injection point
+│   │   └── DocItem/Layout.tsx
+│   ├── css/
+│   │   ├── custom.css
+│   │   └── theme.css
+│   └── types/
+│       └── content.ts                       # TypeScript definitions
+├── .github/workflows/
+│   └── deploy.yml                           # GitHub Actions for GitHub Pages
+├── docusaurus.config.ts                     # Docusaurus config (TypeScript)
+├── sidebars.ts                              # Sidebar structure (TypeScript)
+├── tailwind.config.js
+├── postcss.config.js
+├── package.json
+├── tsconfig.json
+└── README.md
+```
+
+### Chapter Frontmatter Template
+
+```yaml
+---
+title: "Chapter X: Title"
+learning_outcomes:
+  - Outcome 1
+  - Outcome 2
+  - Outcome 3
+week_number: 1
+module_number: 1
+proficiency_level: ["Beginner", "Intermediate", "Advanced"]
+prerequisites: []
+tags: ["tag1", "tag2"]
+authors: ["Instructor"]
+last_updated: "2025-12-06"
+---
+```
+
+### Sidebar Configuration (_category_.json per module)
+
+```json
+{
+  "label": "Module 1: Physical AI & Sensors (Weeks 1-2)",
+  "position": 1,
+  "collapsed": false,
+  "collapsible": true
+}
+```
+
+### GitHub Actions Deployment
+
+Trigger: `push` to main branch
+Action: `.github/workflows/deploy.yml`
+Deploys to GitHub Pages automatically
+
+---
+
 ### Phase 1: Docusaurus Foundation (The Engine)
 
 **Goal**: Functional Docusaurus site with module/chapter structure, ready for content

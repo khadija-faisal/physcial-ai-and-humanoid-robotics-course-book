@@ -161,7 +161,7 @@ export default function Root({ children }) {
 ### Project Layout (TypeScript + Classic Preset)
 
 ```
-physcial-ai-and-humanoid-robotics-course/
+physcial-ai-and-humanoid-robotics-course-book/
 ├── docs/                                    # Documentation source
 │   ├── module-01/                           # Module 1: Physical AI & Sensors (Weeks 1-2)
 │   │   ├── _category_.json

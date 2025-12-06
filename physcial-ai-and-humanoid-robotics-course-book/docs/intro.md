@@ -1,47 +1,52 @@
 ---
+title: "Getting Started with Physical AI & Humanoid Robotics"
 sidebar_position: 1
+authors: ["Instructor"]
+last_updated: "2025-12-07"
 ---
 
-# Tutorial Intro
+# Getting Started with Physical AI & Humanoid Robotics
 
-Let's discover **Docusaurus in less than 5 minutes**.
+Welcome to the Physical AI & Humanoid Robotics Learning Platform! This is a comprehensive 13-week curriculum designed to take you from foundational concepts in embodied intelligence through advanced topics in humanoid robotics, ROS 2, and vision-language action (VLA) systems.
 
-## Getting Started
+## About This Curriculum
 
-Get started by **creating a new site**.
+This textbook covers:
 
-Or **try Docusaurus immediately** with **[docusaurus.new](https://docusaurus.new)**.
+- **Week 1-2**: Physical AI foundations and sensors (LIDAR, IMU)
+- **Week 3-5**: ROS 2 fundamentals, nodes, and topics
+- **Week 6-10**: Gazebo physics simulation and NVIDIA Isaac Sim
+- **Week 11-13**: Humanoid locomotion and capstone projects
 
-### What you'll need
+## Learning Path
 
-- [Node.js](https://nodejs.org/en/download/) version 20.0 or above:
-  - When installing Node.js, you are recommended to check all checkboxes related to dependencies.
+Start with **Module 1: Foundations** to understand embodied intelligence and sensor systems, then progress through ROS 2, simulation, and finally humanoid robotics.
 
-## Generate a new site
+### Module Overview
 
-Generate a new Docusaurus site using the **classic template**.
+1. **Module 1: Physical AI & Sensors (Weeks 1-2)**
+   - Introduction to embodied intelligence
+   - Sensor systems and data acquisition
 
-The classic template will automatically be added to your project after you run the command:
+2. **Module 2: ROS 2 Fundamentals (Weeks 3-5)**
+   - ROS 2 architecture and communication
+   - Nodes, topics, and services
 
-```bash
-npm init docusaurus@latest my-website classic
-```
+3. **Module 3: Gazebo & Isaac Sim (Weeks 6-10)**
+   - Physics simulation environments
+   - NVIDIA Isaac Sim for AI robotics
 
-You can type this command into Command Prompt, Powershell, Terminal, or any other integrated terminal of your code editor.
+4. **Module 4: VLA & Capstone (Weeks 11-13)**
+   - Bipedal locomotion and humanoid systems
+   - Capstone project development
 
-The command also installs all necessary dependencies you need to run Docusaurus.
+## How to Use This Textbook
 
-## Start your site
+- Each chapter contains learning outcomes, explanations, and code examples
+- Select text to ask the AI chatbot questions about the material
+- Use the personalization feature to adjust content difficulty (Beginner, Intermediate, Advanced)
+- Optionally view content in Urdu using the translate button
 
-Run the development server:
+## Next Steps
 
-```bash
-cd my-website
-npm run start
-```
-
-The `cd` command changes the directory you're working with. In order to work with your newly created Docusaurus site, you'll need to navigate the terminal there.
-
-The `npm run start` command builds your website locally and serves it through a development server, ready for you to view at http://localhost:3000/.
-
-Open `docs/intro.md` (this page) and edit some lines: the site **reloads automatically** and displays your changes.
+Ready to begin? Start with [Module 1: Foundations](/docs/module-01-physical-ai/week-01-intro).

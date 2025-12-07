@@ -15,7 +15,7 @@ const config: Config = {
   },
 
   // Set the production url of your site here
-  url: 'https://physical-ai-robotics.example.com',
+  url: 'https://physcial-ai-and-humanoid-robotics-c.vercel.app/',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: '/',
@@ -88,7 +88,7 @@ const config: Config = {
           label: 'Curriculum',
         },
         {
-          href: 'https://github.com/panaversity/physical-ai-humanoid-robotics-course-book',
+          href: 'https://github.com/khadija-faisal/physcial-ai-and-humanoid-robotics-course-book',
           label: 'GitHub',
           position: 'right',
         },
@@ -131,11 +131,11 @@ const config: Config = {
             },
             {
               label: 'GitHub Discussions',
-              href: 'https://github.com/panaversity/physical-ai-humanoid-robotics-course-book/discussions',
+              href: 'https://github.com/khadija-faisal/physcial-ai-and-humanoid-robotics-course-book',
             },
             {
               label: 'Report Issues',
-              href: 'https://github.com/panaversity/physical-ai-humanoid-robotics-course-book/issues',
+              href: 'https://github.com/khadija-faisal/physcial-ai-and-humanoid-robotics-course-book/issues',
             },
           ],
         },
@@ -152,7 +152,7 @@ const config: Config = {
             },
             {
               label: 'GitHub Repository',
-              href: 'https://github.com/panaversity/physical-ai-humanoid-robotics-course-book',
+              href: 'https://github.com/khadija-faisal/physcial-ai-and-humanoid-robotics-course-book',
             },
           ],
         },

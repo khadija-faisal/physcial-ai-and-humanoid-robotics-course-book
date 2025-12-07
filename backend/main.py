@@ -9,8 +9,8 @@ import cohere
 # CONFIG
 # -------------------------------------
 # Your Deployment Link:
-SITEMAP_URL = "https://physicalhumanoidaitextbook.vercel.app/sitemap.xml"
-COLLECTION_NAME = "humanoid_ai_book"
+SITEMAP_URL = "https://physcial-ai-and-humanoid-robotics-c.vercel.app/sitemap.xml"
+COLLECTION_NAME = "physical_humanoid_ai_book"
 
 cohere_client = cohere.Client("o4tjKoUr5JySL3dAYxX5Z6jJAPChqetjp5cy6KwC")
 EMBED_MODEL = "embed-english-v3.0"
@@ -39,8 +39,7 @@ def get_all_urls(sitemap_url):
         print(" -", u)
 
     return urls
-
-
+    
 # -------------------------------------
 # Step 2 — Download page + extract text
 # -------------------------------------

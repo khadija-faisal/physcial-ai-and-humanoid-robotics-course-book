@@ -90,11 +90,11 @@ def chunk_text(text, max_chars=1000):
 
         chunk = text[start:split_pos].strip()
         
+        
         if chunk:
             chunks.append(chunk)
         
         # Move start pointer forward
-        if split_pos == -1:
             start = end
         else:
             start = split_pos
@@ -117,9 +117,9 @@ def embed(text):
         return response.embeddings[0]
     except Exception as e:
         print(f"⚠ Embed Error: {e}")
+   
         time.sleep(5)
-        # Return None instead of empty list to indicate failure
-        return None
+        return []
 # -------------------------------------
 # Step 5 — Store in Qdrant
 # -------------------------------------
@@ -140,9 +140,6 @@ def create_collection():
 
 def save_chunk_to_qdrant(chunk, chunk_id, url):
     vector = embed(chunk)
-    if vector is None:
-        print(f"⚠ Skipping chunk {chunk_id} due to embedding failure")
-        return
     qdrant.upsert(
         collection_name=COLLECTION_NAME,
         points=[

@@ -15,7 +15,7 @@ url=qdrant_url,
 api_key=qdrant_api_key,
 )
 
-
+# retrive data from qdrant
 def data_retrieve(query):
     embedding = embed(query)
     result = qdrant.query_points(

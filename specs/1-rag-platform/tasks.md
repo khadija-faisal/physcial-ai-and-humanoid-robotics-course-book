@@ -775,9 +775,137 @@ This phase enhances the visual design, animations, and accessibility of the plat
 
 ---
 
-## Next Steps (Post-Phase 2d)
+## Phase 2e: Chat UI Visibility & Styling Fixes
 
-Once UI/UX enhancements are verified:
+### Story Context
+**User Story**: Ensure chat widget UI is clearly visible with consistent navy blue theme (US2 - Priority P1)
+
+This phase fixes critical visibility issues in the chat widget and ensures consistent navy blue theming throughout the chat interface.
+
+### Issues Fixed
+- ✅ Message input/output had confusing gradients - not clearly visible
+- ✅ Dark mode footer background was white instead of dark
+- ✅ Chat input and output needed clear navy blue theme consistency
+
+### Success Criteria (Acceptance Tests)
+- [ ] User message bubbles: Solid navy blue (#003366) with white text
+- [ ] Bot message bubbles: Solid white (#ffffff) in light mode, dark (#1a1a2e) in dark mode
+- [ ] Input field: Clear white background in light mode, dark in dark mode
+- [ ] Send button: Solid navy blue (#003366) with hover to bright blue (#0052cc)
+- [ ] Typing indicator: White background in light mode, dark in dark mode
+- [ ] All text is clearly visible and readable
+- [ ] Dark mode footer: Deep dark background (#0a0a0f)
+- [ ] No weird gradients or confusing color combinations
+
+---
+
+### Tasks
+
+#### Message Bubble Styling (T072-T073)
+
+- [x] T072 [P] [US2] Fix user message bubbles in `src/components/ChatWidget/styles.css`:
+  - Background: Solid navy blue (#003366)
+  - Hover: Bright blue (#0052cc)
+  - Text: White
+  - No gradients - clear solid colors
+  - Box-shadow for depth
+
+- [x] T073 [P] [US2] Fix bot message bubbles:
+  - Light mode: Solid white (#ffffff) with gray border (#e0e0e0)
+  - Dark mode: Solid dark (#1a1a2e) with subtle blue border (#2a2a3e)
+  - Text: Dark gray in light mode (#333333), light gray in dark mode (#e8e8e8)
+  - Clear, readable appearance
+
+#### Input Area Styling (T074-T075)
+
+- [x] T074 [P] [US2] Fix chat input field:
+  - Light mode: White background (#ffffff) with gray border (#d0d0d0)
+  - Dark mode: Dark navy background (#1a1a2e) with dark border (#2a2a3e)
+  - Focus state: Navy border (#003366) with subtle blue shadow
+  - Text: Dark in light mode, light in dark mode
+  - Placeholder: Gray text (#999999)
+
+- [x] T075 [P] [US2] Fix send button:
+  - Background: Solid navy blue (#003366)
+  - Hover: Bright blue (#0052cc) with shadow
+  - Text: White
+  - Same color in both light and dark modes
+  - Consistent navy theme
+
+#### Typing Indicator (T076)
+
+- [x] T076 [P] [US2] Fix typing indicator animation:
+  - Light mode: White background (#ffffff) with border
+  - Dark mode: Dark background (#1a1a2e) with subtle border
+  - Dots: Solid navy blue (#003366) in light mode
+  - Dots: Light blue (#4da6ff) in dark mode
+  - No gradient - solid colors only
+
+#### Footer Dark Mode (T077)
+
+- [x] T077 [P] [US1] Fix dark mode footer background:
+  - Dark mode footer: Deep dark (#0a0a0f) instead of white
+  - Light mode footer: Light gray (#f5f7fa) - keep as is
+  - Ensures footer matches page background in dark mode
+  - Links use Docusaurus defaults (automatically light in dark mode)
+
+#### Verification & Testing
+
+- [ ] T078 Build project: `npm run build`
+  - Verify no CSS errors
+  - Check TypeScript compilation
+
+- [ ] T079 Test light mode chat:
+  - User messages: Navy blue bubbles with white text ✓
+  - Bot messages: White bubbles with dark text ✓
+  - Input: White field with gray border ✓
+  - Send button: Navy blue ✓
+  - Typing dots: Navy blue solid color ✓
+
+- [ ] T080 Test dark mode chat:
+  - User messages: Navy blue bubbles with white text ✓
+  - Bot messages: Dark bubbles with light text ✓
+  - Input: Dark field with border ✓
+  - Send button: Navy blue ✓
+  - Typing dots: Light blue solid color ✓
+
+- [ ] T081 Test footer visibility:
+  - Light mode: Gray background with navy links ✓
+  - Dark mode: Deep dark background ✓
+  - All links readable in both modes ✓
+
+- [ ] T082 Responsive testing:
+  - Mobile: Chat UI remains clear and usable ✓
+  - Tablet: Proper spacing and sizing ✓
+  - Desktop: Full functionality ✓
+
+---
+
+## Phase 2e: Summary
+
+**Total Tasks**: 11 (T072-T082)
+**Completed Tasks**: 7 (T072-T077)
+**Remaining Tasks**: 5 (T078-T082 - testing & verification)
+**Estimated Effort**: 20-30 minutes total
+
+### Files Modified
+
+1. `src/components/ChatWidget/styles.css`:
+   - Message bubbles: Solid navy blue (user), white/dark (bot)
+   - Input field: Clear white/dark backgrounds
+   - Send button: Solid navy blue theme
+   - Typing indicator: Solid colors instead of gradients
+   - All gradient effects removed for clarity
+
+2. `src/css/custom.css`:
+   - Dark mode footer: Deep dark background (#0a0a0f)
+   - Light mode footer: Light gray background (#f5f7fa) - unchanged
+
+---
+
+## Next Steps (Post-Phase 2e)
+
+Once chat UI visibility fixes are verified:
 1. **Phase 3**: Populate chapters with curriculum content (13 weeks, multi-level variants) + implement user authentication
 2. **Phase 4**: Add advanced features (proficiency level switching, translation, personalization)
 3. **Phase 5**: Deploy backend to cloud service and frontend to GitHub Pages + E2E testing

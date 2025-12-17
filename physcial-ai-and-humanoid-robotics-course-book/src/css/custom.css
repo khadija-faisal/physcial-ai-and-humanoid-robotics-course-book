@@ -66,9 +66,6 @@
   font-size: 1.1rem;
 }
 
-/* Dark Mode Footer - Keep Docusaurus default styling */
-/* No custom dark mode footer styling - use Docusaurus defaults */
-
 /* Light Mode Footer Link Visibility */
 :root .footer__link-item {
   color: #003366 !important;
@@ -101,6 +98,11 @@
 
 :root .footer {
   background-color: #f5f7fa !important;
+}
+
+/* Dark Mode Footer - Use dark background */
+[data-theme='dark'] .footer {
+  background-color: #0a0a0f !important;
 }
 
 /* Modern Animations & Effects */

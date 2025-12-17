@@ -68,7 +68,7 @@ const ChatWidget: React.FC = () => {
 
     try {
       // Send request to backend API
-      const response = await fetch('http://localhost:8000/api/chat', {
+      const response = await fetch('https://physcial-ai-and-humanoid-robotics-course-book-production.up.railway.app/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

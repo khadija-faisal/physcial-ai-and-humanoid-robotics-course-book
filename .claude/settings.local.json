@@ -14,7 +14,8 @@
       "Bash(git commit -m \"$(cat <<''EOF''\nCreate comprehensive implementation plan and design artifacts\n\nPlan Structure:\n- plan.md: 5-phase development plan with Docusaurus + FastAPI architecture\n  * Phase 0: Research & technical decisions\n  * Phase 1: Docusaurus foundation (docs/module-XX structure, GitHub Pages deploy)\n  * Phase 2: RAG backend core (FastAPI + Neon + Qdrant + ChatKit)\n  * Phase 3: Curriculum content (13 weeks, multi-level variants)\n  * Phase 4: Smart features (ChatKit embedding, personalization, auth)\n  * Phase 5: Quality & launch (E2E tests, demo, deployment verification)\n\nDesign Artifacts:\n- contracts/openapi.yaml: Complete REST API specification (auth, chapters, chatbot, profile endpoints)\n- research.md: Technical decisions documented with rationales\n  * Swizzling strategy for ChatKit injection\n  * OpenAI Agents SDK + Chatkit integration patterns\n  * Deterministic text chunking (1024 tokens, 128 overlap)\n  * Neon connection pooling with SQLAlchemy\n  * GitHub Actions CI/CD workflow\n  * Translation strategy (AI-on-the-fly for MVP)\n  * Selected-text RAG constraint enforcement\n- quickstart.md: 30-minute setup guide for local development\n\nData Model:\n- User, Chapter, SelectedTextContext, ChatbotMessage, Embedding entities\n- Relationships and validation rules defined\n- Qdrant payload structure for vector search\n\nDeployment Strategy:\n- GitHub Pages for frontend (auto-deploy via GitHub Actions)\n- Cloud hosting (Render/Fly.io) for backend\n- Environment configuration via .env files\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
       "Bash(pwsh:*)",
       "Bash(powershell -Command:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "mcp__ide__getDiagnostics"
     ],
     "deny": [],
     "ask": []

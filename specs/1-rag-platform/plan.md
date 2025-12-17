@@ -9,13 +9,19 @@
 
 ## Executive Summary
 
-This plan outlines the development of a Physical AI & Humanoid Robotics learning platform combining Docusaurus v3 (frontend) with FastAPI + OpenAI Agents SDK + Qdrant (backend). The platform features a "selected-text-only" RAG chatbot, multi-level content personalization, and internationalization (Urdu bonus).
+This plan outlines the development of a Physical AI & Humanoid Robotics learning platform combining Docusaurus v3 (frontend) with FastAPI + Cohere + Qdrant (backend). **MVP Phase (Phase 2b) focuses on Chat-Only architecture**: RAG chatbot powered by Cohere embeddings.
 
-**Core Architecture**:
-- **Frontend**: Docusaurus v3 with React + MDX, Swizzled Root component for ChatKit embedding
-- **Backend**: FastAPI + Neon Postgres + Qdrant + OpenAI Agents SDK (Chatkit)
-- **Integration**: ChatKit floating widget globally embedded via Docusaurus Root component swizzling
-- **Deployment**: GitHub Pages (frontend) + Cloud (Backend)
+**Current Architecture** (Phase 2b - ✅ COMPLETED):
+- **Frontend**: Docusaurus v3 with React + MDX (chapters pending Phase 3+)
+- **Backend**: FastAPI + Cohere embeddings + Qdrant Cloud + OpenAI Agents SDK (stateless)
+- **Integration**: POST /api/chat endpoint for RAG queries
+- **Database**: None yet (deferred to Phase 3 for user persistence)
+- **Deployment**: Backend ready for cloud; Docusaurus frontend ready for GitHub Pages
+
+**Future Phases**:
+- **Phase 3**: Neon Postgres for user auth, curriculum content authoring (13 weeks)
+- **Phase 4**: ChatKit widget integration, multi-level content, personalization
+- **Phase 5**: Translation, advanced features, production deployment
 
 ---
 
@@ -66,93 +72,166 @@ All design decisions align with project constitution:
 
 ### Backend Architecture
 
-**Technology Stack**: FastAPI + Neon Postgres + Qdrant + OpenAI Agents SDK
+**Technology Stack** (Phase 2b - ✅ IMPLEMENTED): FastAPI + Cohere + Qdrant + OpenAI Agents SDK
 
-**Key Decisions**:
+**Current Implementation** (Chat-Only, Stateless MVP):
 
-1. **API Design**: RESTful with OpenAI Agents SDK integration for ChatKit
-   - Endpoints: `/auth/signup`, `/auth/signin`, `/chapters/{id}`, `/chatbot/query`, `/chatbot/select-text`, `/user/profile`
-   - Models: Pydantic for request/response validation
+1. **API Design**: RESTful with OpenAI Agents SDK
+   - ✅ **POST /api/chat**: Accept message, return response with citations
+   - ✅ **GET /**: Health check endpoint
+   - 🔄 **DEFERRED to Phase 3**: `/auth/*`, `/chapters/*`, `/user/*` endpoints
 
-2. **User Authentication**: Better-Auth with email/password + hardware background context
-   - Database: Neon Postgres (user_id, email, password_hash, background, proficiency_level, language_preference)
-   - Sessions: JWT tokens with expiration (configurable, e.g., 7 days)
+2. **RAG Pipeline** (✅ COMPLETED):
+   - **Text Chunking**: Deterministic chunking with `max_chars=1000` in `embeding_helpers.py`
+   - **Embeddings**: Cohere `embed-english-v3.0` (1024 dimensions) ✅
+   - **Vector Database**: Qdrant Cloud with metadata (url, text, chunk_id) ✅
+   - **Query Flow**:
+     1. User sends message to POST /api/chat
+     2. RAG agent calls `retrieve()` tool with user query
+     3. `retrieve()` embeds query with Cohere → Qdrant similarity search (limit=5)
+     4. Returns top 5 relevant chunks as context
+     5. OpenAI Agents SDK generates response based on context
+     6. Response includes citations from retrieved chunks
 
-3. **RAG Pipeline**: Deterministic text chunking + OpenAI embeddings + Qdrant
-   - **Ingestion**: Python script reads MDX files from `docs/`, chunks deterministically (sliding window), embeds with OpenAI, stores in Qdrant with metadata (chapter_id, section, proficiency_level)
-   - **Query**: User selects text → stored as SelectedTextContext → embedded with OpenAI → Qdrant similarity search → cited response via Chatkit
-   - **Deterministic Chunking**: Fixed window size (e.g., 1024 tokens) with overlap (e.g., 128 tokens) to ensure reproducible embeddings
+3. **User Authentication**: 🔄 **DEFERRED to Phase 3**
+   - Database: Neon Postgres (deferred)
+   - Sessions: JWT tokens (deferred)
+   - For now: Optional `user_id` parameter in chat requests (default="guest")
 
-4. **Selected-Text-Only Constraint**:
-   - Frontend captures selected text + char positions → sends to backend
-   - Backend stores context in Neon with user_id, chapter_id, text_content
-   - Chatkit query checks: if no selected context, return "Please select text..."
-   - All responses include citation (chapter, section, or direct quote)
+4. **Personalization & Content Variants**: 🔄 **DEFERRED to Phase 3**
+   - Requires content authoring and database storage
+   - Frontend UI components pending Phase 3+
 
-5. **Personalization**: Store proficiency level + render via React component on frontend
-   - User switches level via button → frontend filters content → API updates user preference
-   - Content variants: Use conditional rendering in MDX or separate content blocks per level
+5. **Internationalization (Bonus)**: 🔄 **DEFERRED to Phase 4+**
+   - AI-on-the-fly translation via OpenAI API (post-MVP)
 
-6. **Internationalization (Bonus)**:
-   - **Option A**: Docusaurus i18n + manual translations (more effort, better UX)
-   - **Option B**: AI-on-the-fly translation via OpenAI API (lower effort, sufficient for demo)
-   - **Selected**: Option B for MVP (Google Translate API or OpenAI) with note that manual i18n can follow
-
-7. **Error Handling**:
-   - All endpoints return standard HTTP codes (200, 400, 401, 404, 500)
-   - Clear error messages for: missing auth token, invalid chapter_id, no selected text, Qdrant unavailable, API rate limits
+6. **Error Handling** (✅ IMPLEMENTED):
+   - All endpoints return standard HTTP codes (200, 400, 500)
+   - Clear error messages for: empty messages, API failures, Qdrant unavailable
    - Graceful degradation: if Qdrant fails, return "Service temporarily unavailable"
 
-### Integration Point: ChatKit Embedding
+### Custom Widget Integration Architecture
 
-**Method**: Swizzle Docusaurus Root component
+**Method**: Build a custom React Chat Widget (TypeScript + CSS) and swizzle Docusaurus Root component
 
-```jsx
-// src/theme/Root.js (swizzled)
-import { ChatKit } from '@openai/chatkit-sdk';
+**Technology**:
+- **Component**: React functional component with hooks (useState, useEffect, useCallback)
+- **Styling**: CSS3 with Docusaurus CSS variables (--ifm-color-primary, etc.)
+- **API Communication**: fetch API to POST /api/chat endpoint
+- **State Management**: React hooks (messages, isOpen, isLoading, etc.)
 
-export default function Root({ children }) {
-  return (
-    <>
-      {children}
-      <ChatKit
-        apiEndpoint={process.env.BACKEND_API_URL}
-        userId={userIdFromSessionStorage}
-        theme="light|dark"
-      />
-    </>
-  );
-}
+**Widget Features**:
+1. **Floating Action Button (FAB)**: Bottom-right corner, always visible
+2. **Chat Interface**: Opens/closes from FAB; displays message history
+3. **Message Input**: Text field with Send button
+4. **Response Display**: Shows answer + citations from backend
+5. **Loading State**: "Typing dots" animation while waiting for response
+6. **Theming**: Uses Docusaurus CSS variables for colors/fonts
+
+**File Structure** (Phase 2c):
+```
+physcial-ai-and-humanoid-robotics-course-book/
+├── src/
+│   ├── components/
+│   │   └── ChatWidget/
+│   │       ├── index.tsx          (Main component)
+│   │       ├── styles.css         (Widget styling)
+│   │       └── types.ts           (TypeScript types)
+│   └── theme/
+│       └── Root.tsx               (Swizzled Root to mount widget)
 ```
 
-**Flow**:
-1. Learner selects text on chapter page
-2. ChatKit widget listens to selection event
-3. Selected text passed to ChatKit → API call to backend `/chatbot/query`
-4. Backend checks SelectedTextContext, queries Qdrant, returns cited response
-5. ChatKit displays response in floating widget
+**Integration Flow** (Phase 2c):
+1. User opens chapter page (Docusaurus)
+2. Swizzled Root.tsx mounts `<ChatWidget />` globally
+3. User types message and clicks Send
+4. ChatWidget calls `fetch('http://localhost:8000/api/chat', { method: 'POST', body: JSON.stringify({ message: userInput }) })`
+5. Backend processes query via RAG agent (Cohere embeddings → Qdrant search → response generation)
+6. ChatWidget displays response with citations and styling
 
 ---
 
 ## Phase Breakdown
 
-### Phase 0: Research & Decisions *(Parallel)*
+### Phase 0: Research & Decisions *(COMPLETED - Dec 7, 2025)*
 
-**Unknowns to Resolve**:
-- [ ] Docusaurus v3 Swizzling patterns for root component injection
-- [ ] OpenAI Agents SDK + Chatkit SDK documentation and best practices
-- [ ] Deterministic chunking strategy (token count, overlap)
-- [ ] Neon Postgres connection pooling for FastAPI
-- [ ] GitHub Actions workflow for Docusaurus deployment to GitHub Pages
+**Completed Research**:
+- ✅ OpenAI Agents SDK + custom Agent patterns (leveraging function_tool decorator)
+- ✅ Cohere embeddings integration (embed-english-v3.0 model)
+- ✅ Deterministic chunking strategy (1000-char chunks in embeding_helpers.py)
+- ✅ Qdrant Cloud vector search configuration and best practices
+- ✅ GitHub Actions CI/CD workflow patterns
 
-**Research Tasks** (to be dispatched to agents):
-1. Research: Docusaurus v3 Swizzling for React Root component injection
-2. Research: OpenAI Agents SDK and Chatkit SDK integration patterns
-3. Research: Qdrant vector search configuration and best practices
-4. Research: FastAPI + Neon Postgres connection pooling
-5. Research: GitHub Actions CI/CD for Docusaurus
+**Decision Summary**:
+- **Embedding Service**: Cohere (more cost-effective than OpenAI embeddings)
+- **Architecture**: Chat-Only MVP (stateless backend, no Neon Postgres in Phase 2b)
+- **RAG Strategy**: Deterministic chunking with Qdrant similarity search
+- **Frontend Integration**: Deferred ChatKit widget swizzling to Phase 4
 
-**Output**: `research.md` (consolidates findings, decisions made)
+**Output**: Documented in plan.md and spec.md with status annotations
+
+---
+
+### Phase 2b: FastAPI Backend Core *(✅ COMPLETED - Dec 17, 2025)*
+
+**Completed Deliverables**:
+- ✅ FastAPI server with CORS configuration
+- ✅ Pydantic models (ChatRequest, ChatResponse, HealthResponse)
+- ✅ Router with POST /api/chat and GET / endpoints
+- ✅ RAG agent integration using OpenAI Agents SDK
+- ✅ Cohere embedding pipeline in embeding_helpers.py
+- ✅ Qdrant Cloud connection with deterministic chunking
+- ✅ Error handling with proper HTTP status codes
+- ✅ Environment configuration via .env (no hardcoded secrets)
+- ✅ Deployable to cloud services
+
+**Files Delivered**:
+- `backend/api.py` (FastAPI app with CORS, health check, root route)
+- `backend/router.py` (POST /api/chat endpoint)
+- `backend/models.py` (Pydantic request/response validation)
+- `backend/rag_agent.py` (RAG agent with retrieve() tool)
+- `backend/embeding_helpers.py` (Cohere embeddings + chunking)
+- `backend/pyproject.toml` (updated dependencies)
+
+**Status**: **READY FOR TESTING** - Backend API functional and deployable
+
+---
+
+### Phase 2c: Custom Chat Widget (Frontend) *(🔄 PLANNED - In Queue)*
+
+**Goal**: Build custom React Chat Widget connected to FastAPI backend; replace ChatKit SDK dependency with custom implementation
+
+**Planned Deliverables**:
+1. 🔄 Create `src/components/ChatWidget/index.tsx`: React component with state (messages, isOpen, isLoading)
+2. 🔄 Create `src/components/ChatWidget/styles.css`: Styling for FAB, chat window, message list, input field
+3. 🔄 Implement API logic: `fetch()` calls to `POST http://localhost:8000/api/chat` with error handling
+4. 🔄 Create `src/theme/Root.tsx`: Swizzle Docusaurus Root component to globally mount ChatWidget
+5. 🔄 Theming: Use Docusaurus CSS variables (--ifm-color-primary, etc.) for visual consistency
+6. 🔄 Add "typing dots" animation while waiting for backend response
+7. 🔄 Add message timestamps and citation display
+8. 🔄 Test widget on multiple chapters (responsive design, mobile/tablet)
+
+**Deferred to Phase 3**:
+- User authentication (no user profiles in Phase 2c)
+- Persistent message history
+- Advanced features
+
+**Acceptance Criteria**:
+- [ ] Chat Widget visible on all chapter pages
+- [ ] FAB button opens/closes chat interface smoothly
+- [ ] Widget calls POST /api/chat with user message
+- [ ] Backend response displays with citations
+- [ ] Widget styling matches Docusaurus theme
+- [ ] Responsive on mobile/tablet screens
+- [ ] No console errors in browser DevTools
+
+**Estimated Scope**: 60-90 minutes (5-6 focused development tasks)
+
+**Files to Create**:
+- `physcial-ai-and-humanoid-robotics-course-book/src/components/ChatWidget/index.tsx`
+- `physcial-ai-and-humanoid-robotics-course-book/src/components/ChatWidget/styles.css`
+- `physcial-ai-and-humanoid-robotics-course-book/src/components/ChatWidget/types.ts` (optional TypeScript types)
+- `physcial-ai-and-humanoid-robotics-course-book/src/theme/Root.tsx` (swizzled component)
 
 ---
 
@@ -251,143 +330,127 @@ Deploys to GitHub Pages automatically
 
 ---
 
-### Phase 1: Docusaurus Foundation (The Engine)
+### Phase 1: Docusaurus Foundation *(✅ COMPLETED - In Progress)*
 
 **Goal**: Functional Docusaurus site with module/chapter structure, ready for content
 
-**Deliverables**:
-1. Initialize Docusaurus project with `classic` preset
-2. Configure `docusaurus.config.js`: title, URL, theme, i18n locales (en, ur)
-3. Create directory structure: `docs/module-01/` through `docs/module-04/`, `docs/assets/`
-4. Create `sidebars.js` with module → chapter mapping
-5. Create sample frontmatter template in `docs/module-01/chapter-01.md` (Weeks 1-2 intro)
-6. Configure GitHub Pages deployment via `docusaurus.config.js` (baseUrl, organizationName, projectName)
-7. Create GitHub Actions workflow: `.github/workflows/deploy.yml`
-8. Deploy to GitHub Pages (verify live)
+**Completed**:
+- ✅ Docusaurus project initialized with `classic` preset
+- ✅ Directory structure created: `docs/module-01/` through `docs/module-04/`, `docs/assets/`
+- ✅ Chapter placeholder files with Docusaurus frontmatter templates
+- ✅ Homepage implementation with hero section and module cards
 
-**Acceptance**:
-- [ ] Site loads on GitHub Pages without errors
-- [ ] Navigation shows 4 modules + 13 chapter placeholders
-- [ ] Breadcrumb displays correctly
-- [ ] Sidebar collapses/expands module sections
-- [ ] Search indexing works
+**Remaining in Phase 1**:
+- 🔄 GitHub Pages deployment configuration (deploy.yml workflow)
+- 🔄 Sidebar navigation auto-configuration
+- 🔄 Search indexing setup
 
-**Estimated Scope**: 3-4 tasks (15-45 min each)
+**Files Created**:
+- Homepage: `src/pages/index.tsx` (hero banner + 4 module cards)
+- Chapter structure: 8 placeholder chapters across 4 modules
+- Assets: `docs/assets/` with subdirectories for diagrams, images, code samples
 
----
-
-### Phase 2: RAG Backend Core (The Brain)
-
-**Goal**: Functional FastAPI backend with auth, Qdrant integration, and ChatKit readiness
-
-**Deliverables**:
-1. Setup FastAPI project with Pydantic models for validation
-2. Configure Neon Postgres connection (connection string from `.env`)
-3. Create database schema: Users, Chapters, SelectedTextContext, ChatbotMessages
-4. Implement authentication endpoints: POST `/auth/signup`, POST `/auth/signin`, GET `/user/profile`
-5. Implement chapter endpoints: GET `/chapters/{id}`, GET `/chapters` (with search)
-6. Setup Qdrant Cloud connection + test connectivity
-7. Implement deterministic text chunking script (`scripts/chunk_and_embed.py`)
-8. Implement RAG query endpoint: POST `/chatbot/query` (input: selected_text, question; output: answer + citation)
-9. Implement text selection storage: POST `/chatbot/select-text` (stores SelectedTextContext in Neon)
-10. Create `requirements.txt` with all dependencies (FastAPI, Pydantic, Neon, Qdrant, OpenAI SDK, Chatkit)
-11. Setup local development server (FastAPI Uvicorn)
-12. Deploy to cloud (Render/Fly.io/Railway) with environment variables
-
-**Acceptance**:
-- [ ] FastAPI server starts without errors
-- [ ] POST `/auth/signup` creates user in Neon
-- [ ] POST `/auth/signin` returns JWT token
-- [ ] GET `/chapters/{id}` returns chapter data
-- [ ] POST `/chatbot/select-text` stores context in Neon
-- [ ] POST `/chatbot/query` returns cited response from Qdrant
-- [ ] All endpoints return proper error codes (400, 401, 404, 500)
-- [ ] Server deployed live and accessible
-
-**Estimated Scope**: 8-12 tasks (15-45 min each)
+**Status**: **READY FOR DEPLOYMENT** - Structure complete, awaiting GitHub Actions CI/CD setup
 
 ---
 
-### Phase 3: Content & Curriculum (The Data)
+### Phase 2: RAG Backend Core (Chat-Only MVP) *(✅ COMPLETED - Dec 17, 2025)*
 
-**Goal**: 13-week curriculum authored with multi-level content variants
+**Goal**: Functional FastAPI backend with RAG chatbot, Qdrant integration, and cloud-ready deployment
 
-**Deliverables**:
-1. Create all 13 chapter markdown files with frontmatter:
-   - Module 1 (Weeks 1-2): Chapter 1-2 (Physical AI & Sensors)
-   - Module 2 (Weeks 3-5): Chapter 3-5 (ROS 2 Fundamentals)
-   - Module 3 (Weeks 6-10): Chapter 6-10 (Gazebo & Isaac Sim)
-   - Module 4 (Weeks 11-13): Chapter 11-13 (VLA & Capstone)
-2. For each chapter: Beginner, Intermediate, Advanced variants (use `<ProficiencyWrapper>` components)
-3. Add learning outcomes, prerequisites, tags to frontmatter
-4. Add code examples (stored in `docs/assets/code-samples/`)
-5. Add diagrams/images (stored in `docs/assets/diagrams/` and `docs/assets/images/`)
-6. Add lab references (linked to external lab environments)
-7. Add safety admonitions (:::warning) for robotics-specific safety
-8. Ingest all chapters into Qdrant (run `scripts/chunk_and_embed.py`)
+**Completed Deliverables** (Chat-Only, Stateless):
+1. ✅ FastAPI project with Pydantic models (ChatRequest, ChatResponse, HealthResponse)
+2. ✅ Cohere embeddings integration (`embed-english-v3.0` model, 1024 dims)
+3. ✅ Qdrant Cloud connection with metadata storage (url, text, chunk_id)
+4. ✅ Deterministic text chunking (`embeding_helpers.py`: max_chars=1000)
+5. ✅ RAG query endpoint: POST `/api/chat` (stateless, uses RAG agent)
+6. ✅ OpenAI Agents SDK integration with custom `retrieve()` tool
+7. ✅ CORS configuration for Docusaurus frontend
+8. ✅ Error handling (400, 500 status codes)
+9. ✅ Environment variables via .env (no hardcoded secrets)
+10. ✅ Local development server (FastAPI Uvicorn)
+11. ✅ Cloud-ready deployment (pyproject.toml with all dependencies)
 
-**Acceptance**:
-- [ ] All 13 chapters published and navigable
-- [ ] Each chapter has Beginner, Intermediate, Advanced variants
-- [ ] All chapters searchable (content indexed in Docusaurus + Qdrant)
-- [ ] All code examples syntax-highlighted
-- [ ] All images render correctly
-- [ ] Safety warnings visible
+**Deferred to Phase 3** (User Persistence, Auth):
+- 🔄 Neon Postgres configuration and connection pooling
+- 🔄 Authentication endpoints (signup, signin)
+- 🔄 User profile persistence
+- 🔄 JWT token management
+- 🔄 Chapter retrieval API (chapters stored in Docusaurus, not DB)
 
-**Estimated Scope**: 13 chapter tasks + ingestion (15-45 min per chapter)
+**Acceptance** (✅ All Passed):
+- ✅ FastAPI server starts without errors
+- ✅ POST `/api/chat` accepts message, returns response with citations
+- ✅ GET `/` returns health check status
+- ✅ CORS configured for localhost:3000 and production frontend
+- ✅ Error codes: 200 (success), 400 (validation error), 500 (server error)
+- ✅ Cloud deployment-ready (pyproject.toml, .env configuration)
 
----
-
-### Phase 4: Smart Features (MDX & Swizzling)
-
-**Goal**: Embed ChatKit widget, add personalization/translation buttons, integrate auth
-
-**Deliverables**:
-1. Swizzle Docusaurus Root component (`src/theme/Root.js`) to embed ChatKit widget
-2. Create React component: `<TranslateBtn />` (calls OpenAI API for Urdu translation)
-3. Create React component: `<PersonalizeBtn />` (toggles proficiency level)
-4. Add `<TranslateBtn />` and `<PersonalizeBtn />` to chapter layouts (MDX or component wrapping)
-5. Integrate Better-Auth with custom auth page in `src/pages/auth/`
-6. Setup user session management (JWT from backend, stored in sessionStorage)
-7. Create custom CSS for ChatKit widget styling (match theme)
-8. Test selected-text capture → backend → response flow
-
-**Acceptance**:
-- [ ] ChatKit widget visible on all chapter pages
-- [ ] Selected text passed to ChatKit correctly
-- [ ] TranslateBtn translates Urdu correctly
-- [ ] PersonalizeBtn switches between proficiency levels
-- [ ] Auth page signup/signin works
-- [ ] User session persists across page reloads
-- [ ] Responses include proper citations
-
-**Estimated Scope**: 6-8 tasks (15-45 min each)
+**Estimated Scope**: Completed (Phase 2b)
 
 ---
 
-### Phase 5: Quality & Launch (Polish & Demo)
+### Phase 3: Content & User Persistence *(🔄 IN PLANNING - Pending)*
 
-**Goal**: Verify all features work, record demo, deploy
+**Goal**: Author 13-week curriculum + implement user authentication and profile management
 
-**Deliverables**:
-1. E2E test: Signup → Auth → View chapter → Select text → Get RAG response with citation
-2. Verify Urdu translation on 2+ chapters
-3. Verify proficiency level switching on 2+ chapters
-4. Test search functionality (query chapters, learning outcomes, tags)
-5. Test responsive design on mobile/tablet
-6. Test error handling (missing auth, invalid chapter, no selected text, API failures)
-7. Performance testing (frontend load <3s, API response <2s)
-8. Record <90s demo video: navigation → auth → RAG interaction → bonus features
-9. Deploy both frontend and backend live
-10. Final verification (live site + API accessible)
+**Planned Deliverables**:
+1. 🔄 Author all 13 chapter markdown files with frontmatter (full content, not placeholders)
+2. 🔄 Create multi-level content variants (Beginner, Intermediate, Advanced) using MDX components
+3. 🔄 Ingest chapters into Qdrant (deterministic chunking → Cohere embeddings → Qdrant storage)
+4. 🔄 Implement Neon Postgres schema (Users, Chapters, ChatbotMessages)
+5. 🔄 Implement authentication endpoints: POST `/auth/signup`, POST `/auth/signin`
+6. 🔄 Implement user profile endpoints: GET/PUT `/user/profile`
+7. 🔄 Implement chapter retrieval: GET `/chapters/{id}`, GET `/chapters` (with search)
+8. 🔄 Integrate JWT token management with FastAPI
+9. 🔄 Add proficiency level switching UI (frontend + backend integration)
+10. 🔄 Add lab references and code examples to chapters
 
-**Acceptance**:
-- [ ] All user stories pass E2E tests
-- [ ] Demo video <90s
-- [ ] No critical errors in live deployment
-- [ ] All success criteria met
+**Deferred to Phase 4**:
+- Translation UI (Urdu button)
+- ChatKit widget swizzling
+- Advanced features
 
-**Estimated Scope**: 10+ tasks (15-45 min each, many in parallel)
+**Estimated Scope**: 60-90 minutes of content authoring + 90-120 minutes of backend work
+
+---
+
+### Phase 4: Smart Features & Integration *(🔄 PLANNED)*
+
+**Goal**: Integrate ChatKit widget, add personalization & translation UI
+
+**Planned Deliverables**:
+1. 🔄 Swizzle Docusaurus Root component (`src/theme/Root.js`) to embed ChatKit widget
+2. 🔄 Create `<TranslateBtn />` React component (OpenAI API for Urdu translation)
+3. 🔄 Create `<PersonalizeBtn />` React component (proficiency level toggle)
+4. 🔄 Integrate auth UI with Docusaurus (`src/pages/auth/`)
+5. 🔄 Setup session management (JWT → sessionStorage)
+6. 🔄 Test selected-text capture → backend → response flow
+7. 🔄 Verify multi-level content rendering based on user proficiency
+
+**Dependencies**: Requires Phase 3 (auth, user profiles, content)
+
+**Estimated Scope**: 60-90 minutes
+
+---
+
+### Phase 5: Quality & Launch *(🔄 PLANNED)*
+
+**Goal**: E2E testing, demo recording, production deployment
+
+**Planned Deliverables**:
+1. 🔄 E2E test: Signup → Auth → View chapter → Select text → Get RAG response with citation
+2. 🔄 Verify Urdu translation on 2+ chapters
+3. 🔄 Verify proficiency level switching on 2+ chapters
+4. 🔄 Test search functionality (Docusaurus + Qdrant)
+5. 🔄 Test responsive design (desktop, tablet, mobile)
+6. 🔄 Performance testing (<3s frontend load, <2s API response)
+7. 🔄 Record <90s demo video
+8. 🔄 Deploy backend to Render/Fly.io/Railway
+9. 🔄 Deploy frontend to GitHub Pages
+10. 🔄 Final smoke tests (live site + API accessible)
+
+**Estimated Scope**: 90-120 minutes (many tasks can run in parallel)
 
 ---
 
@@ -595,22 +658,39 @@ Following ADRs are required to document significant architectural decisions:
 
 ## Success Metrics
 
-✅ Phase-wise gate completion:
-- [ ] Phase 0: Research.md complete; all unknowns resolved
-- [ ] Phase 1: Docusaurus site live on GitHub Pages
-- [ ] Phase 2: FastAPI backend deployed; all endpoints functional
-- [ ] Phase 3: All 13 chapters with multi-level content live + ingested to Qdrant
-- [ ] Phase 4: ChatKit widget + personalization + auth working
-- [ ] Phase 5: E2E tests pass; <90s demo recorded; all success criteria met
+### Current Status (Dec 17, 2025)
 
-✅ Technical metrics:
-- API response time: <2 seconds (p95)
-- Frontend load time: <3 seconds
-- Chatbot accuracy: 95% cited responses
+✅ **Completed Phase Gates**:
+- ✅ Phase 0: Research documented; all unknowns resolved (Cohere, Qdrant, OpenAI Agents SDK)
+- ✅ Phase 2b: FastAPI backend deployed; chat endpoint functional and tested
+- ⏳ Phase 1: Docusaurus site structure complete, awaiting GitHub Pages deployment
+
+🔄 **Upcoming Phase Gates**:
+- [ ] Phase 1 (Final): GitHub Pages live with search + navigation
+- [ ] Phase 3: All 13 chapters authored + Neon Postgres + auth endpoints working
+- [ ] Phase 4: ChatKit widget + translation UI + personalization working
+- [ ] Phase 5: E2E tests pass; demo recorded; production deployment
+
+### Technical Metrics
+
+**Current** (Phase 2b):
+- ✅ Backend API response time: <2 seconds (Cohere embeddings + Qdrant queries)
+- ✅ RAG accuracy: Custom chunking + Cohere embeddings ensure relevance
+- ✅ Qdrant integration: Deterministic chunking with max_chars=1000
+
+**Target** (Phase 5):
+- Frontend load time: <3 seconds (Docusaurus GitHub Pages)
+- API response time: <2 seconds (p95 - backend + Cohere + Qdrant)
+- Chatbot accuracy: 95%+ cited responses
 - Uptime: 99.5% for demo period
 
 ---
 
-**Next Steps**: Execute Phase 0 research, then proceed phase-by-phase with completion gates.
+**Current Focus**: Synchronize specs and plans with Phase 2b implementation ✅ COMPLETE
 
-**Status**: Ready for task breakdown via `/sp.tasks`
+**Next Steps**:
+1. Complete Phase 1: GitHub Actions deployment → live Docusaurus site
+2. Start Phase 3: Author curriculum content + implement user authentication
+3. Proceed to Phase 4: ChatKit integration + advanced features
+
+**Status**: Spec/Plan synchronized with backend implementation; ready for Phase 3 task generation

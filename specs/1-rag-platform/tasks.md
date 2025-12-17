@@ -344,9 +344,441 @@ Proceed to Week X+1 for advanced topics.
 - **Plan**: [plan.md](./plan.md) — Architecture and design decisions
 - **Contracts**: [contracts/openapi.yaml](./contracts/openapi.yaml) — Backend API specification
 
-## Next Steps (Post-Phase 2)
+---
 
-Once curriculum file structure is complete:
-1. **Phase 3**: Populate chapters with curriculum content (13 weeks, multi-level variants)
-2. **Phase 4**: Integrate RAG chatbot widget (ChatKit) via Docusaurus swizzling
+## Phase 2b: FastAPI Implementation
+
+### Story Context
+**User Story**: Learner uses selected-text RAG chatbot for contextual help (US2 - Priority P1)
+
+This phase establishes the FastAPI backend core—the foundation for all backend operations including authentication, chapter delivery, and RAG chatbot integration. By the end of this phase, the API will be ready to accept requests from the frontend and integrate with the Qdrant vector database and OpenAI APIs.
+
+### Success Criteria (Acceptance Tests)
+- [ ] FastAPI server starts without errors on `localhost:8000`
+- [ ] Pydantic models validate request/response formats correctly
+- [ ] Router handles POST /chat endpoint with proper error codes (200, 400, 500)
+- [ ] RAG agent logic from `rag_agent.py` is integrated into the router
+- [ ] CORS is configured to allow requests from Docusaurus frontend
+- [ ] All endpoints return structured JSON responses
+- [ ] No secrets or API keys hardcoded (uses `.env` file)
+
+---
+
+### Tasks
+
+#### Setup Phase
+
+- [x] T031 [P] Read `backend/rag_agent.py` to understand existing agent logic and required inputs/outputs
+
+- [x] T032 [P] Read `backend/embeding_helpers.py` to understand embedding pipeline and helper functions
+
+#### Core Implementation
+
+- [x] T033 [P] [US2] Create `backend/models.py` with Pydantic models:
+  - ChatRequest model: `{ message: str, user_id: str (default="guest") }`
+  - ChatResponse model: `{ response: str, citations: Optional[List[str]] }`
+  - HealthResponse model: `{ status: str }`
+
+- [x] T034 [P] [US2] Create `backend/router.py` with chat endpoints:
+  - POST /api/chat: Accept ChatRequest, validate inputs, return ChatResponse with error handling
+  - GET /api/health: Return server status
+  - Error handling: HTTPException with 400 for empty messages, 500 for server errors
+  - Routed all requests through RAG agent logic (Runner.run_sync)
+
+- [x] T035 [P] [US2] Create `backend/api.py` (main FastAPI app):
+  - Initialize FastAPI app with title "Physical AI RAG Chatbot API"
+  - Configure CORS middleware to allow requests from Docusaurus frontend (http://localhost:3000, https://physcial-ai-and-humanoid-robotics-c.vercel.app)
+  - Set root route "/" to return health check status
+  - Create POST /api/chat endpoint that integrates with RAG agent
+
+- [x] T036 [US2] Integrate `rag_agent.py` logic into api.py:
+  - Imported Runner from agents SDK
+  - Imported agent from rag_agent module
+  - POST /api/chat handler calls Runner.run_sync(agent, input=request.message)
+  - Returns ChatResponse with final_output from agent
+  - Error handling with try/except block
+
+#### Configuration & Environment
+
+- [x] T037 [P] (SKIPPED - .env file already exists with real keys)
+
+- [x] T038 [P] Update `backend/pyproject.toml`:
+  - Added fastapi>=0.104.1
+  - Added uvicorn>=0.24.0
+  - Added pydantic>=2.5.0
+  - Added python-dotenv>=1.0.0
+  - Existing deps: cohere, openai-agents, qdrant-client, trafilatura
+
+#### Testing & Verification
+
+- [ ] T039 Start FastAPI dev server: `uvicorn backend.api:app --reload --port 8000`
+
+- [ ] T040 Test POST /chat endpoint:
+  - Use curl or Postman: `POST http://localhost:8000/chat`
+  - Send sample request: `{"selected_text": "Gazebo uses ODE physics", "question": "What physics engine?", "user_id": "test-user"}`
+  - Verify response contains: answer, citation (chapter, section, quote), context_id
+  - Status code should be 200
+
+- [ ] T041 Test GET /health endpoint:
+  - Request: `GET http://localhost:8000/health`
+  - Verify response: `{"status": "ok", "version": "1.0"}`
+
+- [ ] T042 Test error handling:
+  - Send request with missing `question` field
+  - Verify 400 response with error message
+  - Send request with invalid JSON
+  - Verify 400 response with validation error
+
+- [ ] T043 Test CORS:
+  - Request from frontend (http://localhost:3000): Should succeed
+  - Verify response includes Access-Control-Allow-Origin header
+
+- [ ] T044 Verify no hardcoded secrets in `api.py`, `router.py`, or `models.py`
+  - All sensitive configs should be in `.env` file or environment variables only
+
+---
+
+## Phase 2b: Summary
+
+**Total Tasks**: 14 (T031-T044)
+**Parallelizable Tasks**: 5 tasks can run in parallel (T031, T032, T033, T034, T035)
+**Estimated Effort**: 105-180 minutes total (15-30 min per task × 7-12 sequential or parallel ops)
+
+### Parallel Execution Strategy
+
+**Parallel Group 1** (can run simultaneously):
+- T031: Read rag_agent.py
+- T032: Read embedding_helpers.py
+- T033: Create models.py
+- T034: Create router.py
+- T035: Create api.py
+
+**Sequential after Parallel Group 1**:
+- T036: Integrate RAG agent logic (depends on T031, T034, T035)
+- T037: Create .env.example (independent)
+- T038: Update pyproject.toml (independent)
+- T039-T044: Testing & verification (depends on T036, T035)
+
+**For single developer**: Execute T031-T035 (30 min), then T036-T038 (30 min), then T039-T044 (30 min) = **90 minutes total**.
+
+---
+
+## Phase 2b: File Locations
+
+**Primary Files**:
+- `backend/models.py` — Pydantic request/response models
+- `backend/router.py` — FastAPI route handlers
+- `backend/api.py` — Main FastAPI app initialization and CORS config
+- `backend/.env.example` — Environment variable template
+- `backend/pyproject.toml` — Project dependencies (updated)
+
+**Dependencies** (already exist):
+- `backend/rag_agent.py` — RAG agent logic (read-only)
+- `backend/embeding_helpers.py` — Embedding helpers (read-only)
+
+---
+
+---
+
+## Phase 2c: Custom React Chat Widget (Frontend Integration)
+
+### Story Context
+**User Story**: Learner uses selected-text RAG chatbot for contextual help (US2 - Priority P1)
+
+This phase builds a custom React Chat Widget to replace the original ChatKit SDK dependency. The widget connects directly to the FastAPI backend, providing a seamless chat interface integrated into Docusaurus chapters via Root component swizzling.
+
+### Success Criteria (Acceptance Tests)
+- [ ] Chat Widget component created with TypeScript + React hooks
+- [ ] Widget CSS styling created with FAB button, chat window, message list
+- [ ] Widget calls POST /api/chat endpoint successfully
+- [ ] Widget displays backend responses with citations
+- [ ] Widget uses Docusaurus CSS variables for theming
+- [ ] Widget displays "typing dots" animation during loading
+- [ ] Widget is globally mounted via Root.tsx swizzling
+- [ ] No console errors or warnings in browser DevTools
+- [ ] Widget is responsive on mobile/tablet screens
+
+---
+
+### Tasks
+
+#### CSS & Styling (5-10 min)
+
+- [x] T045 [P] Create `src/components/ChatWidget/styles.css`:
+  - Floating Action Button (FAB) styling: bottom-right position, circular, 60px diameter
+  - Chat window styling: max-width 400px, height 500px, rounded corners, shadow
+  - Message list styling: scrollable container with message bubbles (user vs bot)
+  - Input field styling: text input + Send button (matches Docusaurus theme)
+  - Dark/light mode support using Docusaurus CSS variables (--ifm-color-primary, --ifm-color-background, etc.)
+  - Typing dots animation (3 dots bouncing animation)
+
+#### Component Implementation (30-45 min)
+
+- [x] T046 [P] Create `src/components/ChatWidget/index.tsx` with React hooks:
+  - State: messages (array), isOpen (boolean), isLoading (boolean), inputValue (string)
+  - Functions: handleOpen(), handleClose(), handleSend(), handleInput()
+  - Message rendering: loop through messages array, display user/bot bubbles with timestamps
+  - Loading state: show typing dots while isLoading = true
+  - Error handling: display error message if API call fails
+
+- [x] T047 [P] Implement API integration in ChatWidget:
+  - Endpoint: `fetch('http://localhost:8000/api/chat', { method: 'POST', ... })`
+  - Request body: `{ message: string }`
+  - Response parsing: Extract response.answer and response.citations
+  - Error handling: Catch network errors, API errors (400, 500), display friendly messages
+  - Loading state: Set isLoading=true before fetch, false after response
+
+#### Optional: TypeScript Types
+
+- [x] T048 [P] Create `src/components/ChatWidget/types.ts` (optional):
+  - Define ChatMessage interface: { id, content, sender, timestamp }
+  - Define ChatWidgetState interface
+  - Define API response types
+
+#### Root Component Swizzling (10-15 min)
+
+- [x] T049 [P] Create `src/theme/Root.tsx` (Docusaurus swizzle):
+  - Import default Root from '@docusaurus/theme-classic'
+  - Import ChatWidget component
+  - Render: `<Root><ChatWidget /></Root>`
+  - Mount ChatWidget globally on all pages
+
+#### Testing & Verification (15-20 min)
+
+- [ ] T050 Build Docusaurus locally: `npm run start`
+  - Verify Chat Widget FAB visible on homepage
+  - Verify no TypeScript compilation errors
+  - Check browser console for errors
+
+- [ ] T051 Test Chat Widget interaction:
+  - Click FAB button: should open chat window
+  - Type message: "Hello, can you help me understand ROS 2?"
+  - Click Send button: should see "typing dots" animation
+  - Wait for response: backend should return answer with citations
+  - Click FAB again: should close chat window
+  - Message history should persist while window is open
+
+- [ ] T052 Test responsive design:
+  - Desktop (1920x1080): Widget positioned correctly, no overflow
+  - Tablet (768x1024): Widget scaled appropriately, still functional
+  - Mobile (375x667): Widget full-width or 90% width, readable on small screens
+
+- [ ] T053 Test theming:
+  - Verify widget colors match Docusaurus primary color (--ifm-color-primary)
+  - Test light mode: background should be light
+  - Test dark mode: background should be dark
+  - Switch between modes: widget should update colors
+
+- [ ] T054 Test error handling:
+  - Stop backend server: type message, verify error message displays
+  - Send empty message: verify validation (disable Send if input empty)
+  - Network timeout: simulate with browser DevTools, verify graceful error
+
+---
+
+## Phase 2c: Summary
+
+**Total Tasks**: 10 (T045-T054)
+**Parallelizable Tasks**: 3 tasks can run in parallel (T045, T046, T047)
+**Estimated Effort**: 60-90 minutes total
+
+### Parallel Execution Strategy
+
+**Parallel Group 1** (can run simultaneously):
+- T045: Create styles.css
+- T046: Create ChatWidget component
+- T047: Implement API integration
+
+**Sequential after Parallel Group 1**:
+- T048: Create types.ts (optional, ~5 min)
+- T049: Create Root.tsx swizzle (~10 min)
+- T050-T054: Testing & verification (~30-40 min, some can run in parallel)
+
+**For single developer**: Execute T045-T047 (45 min), then T048-T049 (15 min), then T050-T054 (30 min) = **90 minutes total**.
+
+---
+
+## Phase 2c: File Locations
+
+**Primary Files to Create**:
+- `physcial-ai-and-humanoid-robotics-course-book/src/components/ChatWidget/index.tsx` — Main component
+- `physcial-ai-and-humanoid-robotics-course-book/src/components/ChatWidget/styles.css` — Styling
+- `physcial-ai-and-humanoid-robotics-course-book/src/components/ChatWidget/types.ts` — TypeScript types (optional)
+- `physcial-ai-and-humanoid-robotics-course-book/src/theme/Root.tsx` — Swizzled root component
+
+**API Endpoint** (already exists):
+- `http://localhost:8000/api/chat` (FastAPI backend, Phase 2b)
+
+---
+
+## Phase 2d: UI/UX Enhancements & Modern Design
+
+### Story Context
+**User Story**: Provide an engaging, modern user experience with smooth animations and excellent visibility (US1 - Priority P1)
+
+This phase enhances the visual design, animations, and accessibility of the platform with a modern aesthetic, improved footer visibility, animated chat widget, and better component styling across light and dark modes.
+
+### Success Criteria (Acceptance Tests)
+- [ ] Footer links are clearly visible in both light and dark modes
+- [ ] Light mode: footer links use navy blue (#003366) with hover effects
+- [ ] Dark mode: footer links use light purple-blue (#b8b8ff) with white on hover
+- [ ] Footer background is light gray in light mode (#f5f7fa)
+- [ ] Chat widget FAB has pulsing glow animation
+- [ ] Chat widget messages pop in with smooth scale animation
+- [ ] Typing indicator dots bounce with gradient colors
+- [ ] Cards have hover lift effect (transform: translateY(-8px))
+- [ ] Buttons have gradient backgrounds and hover shadows
+- [ ] Sidebar items have smooth transitions and active state highlighting
+- [ ] Markdown headers have left border accent with slide-in animation
+- [ ] Tables have gradient header backgrounds with proper styling
+- [ ] Navbar has subtle shadow with hover effect
+- [ ] All animations respect reduced-motion preferences (no errors if disabled)
+
+---
+
+### Tasks
+
+#### Footer Improvements (Light & Dark Mode)
+
+- [x] T055 [P] [US1] Fix light mode footer link visibility in `src/css/custom.css`:
+  - Set footer__link-item color to #003366 (navy)
+  - Set footer__link-item hover color to #0052cc (bright blue)
+  - Set footer__title color to #003366 with font-weight 700
+  - Set footer background to #f5f7fa (light gray)
+  - Add color transition on hover (0.3s ease)
+
+- [x] T056 [P] [US1] Ensure dark mode footer link visibility in `src/css/custom.css`:
+  - Set footer__link-item color to #e8e8e8 (light gray)
+  - Set footer__link-item hover color to #ffffff (white)
+  - Set footer__title color to #ffffff
+  - Set copyright text color to #b8b8ff (light purple-blue)
+
+#### Chat Widget Animations
+
+- [x] T057 [P] [US2] Add FAB pulse animation in `src/components/ChatWidget/styles.css`:
+  - Pulsing glow effect: box-shadow changes from 0 4px 12px to 0 8px 24px
+  - Floating effect on hover: translateY(-10px) combined with scale(1.15)
+  - Gradient background: linear-gradient(135deg, primary, primary-light)
+
+- [x] T058 [P] [US2] Enhance message bubble animations:
+  - Message pop-in: scale from 0.8 to 1 with cubic-bezier(0.34, 1.56, 0.64, 1)
+  - User bubbles: gradient background with shadow on hover
+  - Bot bubbles: gradient light background with subtle shadow
+  - Dark mode: gradient dark backgrounds with blue glow on hover
+
+- [x] T059 [P] [US2] Upgrade typing indicator animation:
+  - Gradient dots: navy to bright blue (light mode), light blue to cyan (dark mode)
+  - Typing dots scale up and move down simultaneously
+  - Typing bubble has pulsing shadow effect (0.6s cycle)
+  - Dark mode: enhanced blue glow animation
+
+- [x] T060 [P] [US2] Enhance empty state robot animation:
+  - Robot icon waves side-to-side (rotate -10deg to 10deg)
+  - Empty state container fades in and scales up
+  - Smooth 2s infinite wave animation
+
+#### Component Styling Enhancements
+
+- [x] T061 [P] [US1] Add card hover effects in `src/css/custom.css`:
+  - Cards slide up on appear with slideInUp animation
+  - Cards lift 8px on hover (transform: translateY(-8px))
+  - Cards have enhanced shadow on hover
+  - Dark mode: blue glow shadow instead of black
+
+- [x] T062 [P] [US1] Style button gradients and effects:
+  - Primary buttons: gradient(135deg, #0052cc, #003366)
+  - Buttons translate up 2px on hover
+  - Buttons have shadow effect on hover
+  - Dark mode: gradient(135deg, #4da6ff, #3d94ff)
+
+- [x] T063 [P] [US1] Enhance sidebar navigation:
+  - Sidebar background: gradient from #f8f9fa to #ffffff (light mode)
+  - Sidebar background: gradient from #1a1a1a to #141414 (dark mode)
+  - Sidebar items have rounded corners (6px) with hover background
+  - Active sidebar item: left border 4px accent (#0052cc light, #4da6ff dark)
+
+- [x] T064 [P] [US1] Style markdown content in `src/css/custom.css`:
+  - H2/H3 headers: left 4px border accent with slide-in animation
+  - Tables: gradient header backgrounds (135deg, #003366 to #0052cc)
+  - Table rows: proper padding and border-bottom styling
+  - Dark mode: blue gradient headers
+
+- [x] T065 [P] [US1] Add navbar and component transitions:
+  - Navbar: subtle shadow with hover effect (0.3s transition)
+  - All interactive elements: smooth 0.2s-0.3s transitions
+  - Removed jarring color changes with smooth gradients
+
+#### Verification & Testing
+
+- [ ] T066 Build site locally: `npm run build`
+  - Verify no CSS compilation errors
+  - Check for any console warnings
+
+- [ ] T067 Test light mode styling:
+  - Footer links are navy blue and clearly visible
+  - Hover state changes to bright blue with underline
+  - Cards have proper shadows and hover lift
+  - Buttons have gradient backgrounds
+  - All text is readable with proper contrast
+
+- [ ] T068 Test dark mode styling:
+  - Footer links are light purple-blue and clearly visible
+  - Copyright text is light purple-blue
+  - Cards have blue glow shadows
+  - All text is readable on dark backgrounds
+  - Animations work smoothly
+
+- [ ] T069 Test animations:
+  - FAB button has continuous pulsing glow
+  - FAB floats up on hover
+  - Messages pop in when sent
+  - Typing dots bounce with gradient colors
+  - Chat empty state robot waves continuously
+  - Cards slide in and lift on hover
+
+- [ ] T070 Test responsive design:
+  - Mobile (375x667): All elements scale correctly
+  - Tablet (768x1024): Layout adapts properly
+  - Desktop (1920x1080): Full experience with all effects
+
+- [ ] T071 Test accessibility:
+  - Verify no animation errors in console
+  - Test with reduced-motion preferences disabled in browser
+  - Ensure color contrast ratios meet WCAG AA standards
+
+---
+
+## Phase 2d: Summary
+
+**Total Tasks**: 17 (T055-T071)
+**Completed Tasks**: 11 (T055-T065)
+**Remaining Tasks**: 6 (T066-T071 - testing & verification)
+**Estimated Effort**: 30-45 minutes total (mostly CSS styling, already implemented)
+
+### Files Modified
+
+1. `src/css/custom.css` - Added 200+ lines of modern animations and styling:
+   - Footer link visibility fixes (light & dark modes)
+   - Animation keyframes (slideInUp, slideInLeft, slideInRight, pulse, glow, etc.)
+   - Card enhancements with hover effects
+   - Button gradients and transitions
+   - Sidebar styling and navigation effects
+   - Markdown content styling
+   - Navbar effects
+
+2. `src/components/ChatWidget/styles.css` - Enhanced with 150+ lines:
+   - FAB pulse and float animations
+   - Message bubble pop-in and gradient effects
+   - Typing indicator dot animations with gradients
+   - Empty state robot wave animation
+   - Dark mode support with blue glow effects
+
+---
+
+## Next Steps (Post-Phase 2d)
+
+Once UI/UX enhancements are verified:
+1. **Phase 3**: Populate chapters with curriculum content (13 weeks, multi-level variants) + implement user authentication
+2. **Phase 4**: Add advanced features (proficiency level switching, translation, personalization)
+3. **Phase 5**: Deploy backend to cloud service and frontend to GitHub Pages + E2E testing
 

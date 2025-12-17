@@ -23,7 +23,14 @@ Follow-up TODOs:
 # Project Constitution
 
 ## 1. Project Context
-This project originates from “Hackathon I: Physical AI & Humanoid Robotics Textbook.” It encompasses the development of a comprehensive textbook on Physical AI and Humanoid Robotics, delivered alongside an embedded RAG (Retrieval Augmented Generation) chatbot. The entire development process adheres to the Spec-Kit Plus methodology, leveraging Claude Code for autonomous assistance. The technical stack includes OpenAI Agents, ChatKit, FastAPI, Qdrant for vector database, and Neon for PostgreSQL. A critical requirement is the "selected-text-only" RAG, ensuring the chatbot's responses are strictly grounded in the textbook content selected by the user.
+This project originates from "Hackathon I: Physical AI & Humanoid Robotics Textbook." It encompasses the development of a comprehensive textbook on Physical AI and Humanoid Robotics, delivered alongside an embedded RAG (Retrieval Augmented Generation) chatbot. The entire development process adheres to the Spec-Kit Plus methodology, leveraging Claude Code for autonomous assistance. The technical stack includes:
+- **Frontend**: Docusaurus v3 + Custom React Chat Widget (NOT ChatKit SDK)
+- **Backend**: FastAPI + OpenAI Agents SDK
+- **Embeddings**: Cohere (embed-english-v3.0, 1024 dimensions)
+- **Vector Database**: Qdrant Cloud Free Tier
+- **Relational Database**: Neon PostgreSQL (Phase 3+)
+
+A critical requirement is the "selected-text-only" RAG, ensuring the chatbot's responses are strictly grounded in the textbook content selected by the user.
 
 ## 2. Core Principles
 ### Educational Clarity
@@ -118,8 +125,8 @@ This project originates from “Hackathon I: Physical AI & Humanoid Robotics Tex
 **Rationale:** To leverage efficient and scalable technologies for the AI and data management components.
 
 ### AI Integration and Code Style
-**Rule:** AI integration MUST primarily utilize OpenAI Agents SDK and ChatKit SDK. All code MUST adhere to established Python coding standards (e.g., PEP 8), ESLint, Prettier, and project-specific style guides.
-**Rationale:** To ensure consistency, readability, maintainability, and effective AI functionality.
+**Rule:** AI integration MUST utilize OpenAI Agents SDK for the RAG backend. Frontend chatbot widget MUST be a custom React component (TypeScript + CSS). All code MUST adhere to established Python coding standards (e.g., PEP 8), ESLint, Prettier, and project-specific style guides.
+**Rationale:** To ensure consistency, readability, maintainability, and effective AI functionality while avoiding dependency on third-party chat SDKs.
 
 ### RAG behavior
 **Rule:** The RAG chatbot MUST answer exclusively from the textbook content in "selected-text-only" mode. Citations ARE REQUIRED for all responses. A deterministic chunking pipeline MUST be stored as a Skill. Graceful error handling MUST be implemented.

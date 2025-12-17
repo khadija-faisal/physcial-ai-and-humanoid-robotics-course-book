@@ -100,6 +100,22 @@ A learner prefers Urdu and wants to read the same chapter in their native langua
 
 ## Requirements *(mandatory)*
 
+### Implementation Status Summary
+
+**Phase 2b (Backend Core) Status**: ✅ **COMPLETED** (Dec 17, 2025)
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| **FastAPI Server** | ✅ Complete | Configured with CORS, health check endpoint, POST /api/chat |
+| **Cohere Embeddings** | ✅ Complete | `embed-english-v3.0` model integrated in `embeding_helpers.py` |
+| **Qdrant Integration** | ✅ Complete | Cloud connection established, deterministic chunking implemented |
+| **RAG Agent** | ✅ Complete | OpenAI Agents SDK + custom retrieve tool integrated |
+| **Pydantic Models** | ✅ Complete | ChatRequest, ChatResponse, HealthResponse models |
+| **Error Handling** | ✅ Complete | Proper HTTP status codes (200, 400, 500) |
+| **Authentication** | 🔄 Deferred | Phase 3: User signup/signin, JWT tokens, Neon Postgres |
+| **User Profiles** | 🔄 Deferred | Phase 3: Background context, proficiency level storage |
+| **Chapter API** | 🔄 Deferred | Phase 3: Endpoints to retrieve chapters and manage content |
+
 ### Functional Requirements
 
 #### Curriculum & Content Delivery
@@ -117,33 +133,36 @@ A learner prefers Urdu and wants to read the same chapter in their native langua
 - **FR-010**: System MUST implement a deterministic chunking pipeline for text embeddings; this pipeline MUST be stored as a reusable Skill.
 
 #### Authentication & User Profile
-- **FR-011**: System MUST provide a sign-up endpoint that collects user email, password, and hardware/background context (multiple-choice + freetext).
-- **FR-012**: System MUST persist user profile data (background, proficiency level, language preference) in Neon Postgres.
-- **FR-013**: System MUST provide a sign-in endpoint that authenticates users via email/password.
-- **FR-014**: System MUST maintain user session tokens securely (JWT or session-based, with expiration).
+- **FR-011**: System MUST provide a sign-up endpoint that collects user email, password, and hardware/background context (multiple-choice + freetext). 🔄 **DEFERRED to Phase 3** (Not in MVP)
+- **FR-012**: System MUST persist user profile data (background, proficiency level, language preference) in Neon Postgres. 🔄 **DEFERRED to Phase 3** (No Neon Postgres in Phase 2b; backend is stateless)
+- **FR-013**: System MUST provide a sign-in endpoint that authenticates users via email/password. 🔄 **DEFERRED to Phase 3**
+- **FR-014**: System MUST maintain user session tokens securely (JWT or session-based, with expiration). 🔄 **DEFERRED to Phase 3**
 
 #### Personalization
-- **FR-015**: System MUST store user-selected proficiency level (Beginner, Intermediate, Advanced) per chapter in user profile.
-- **FR-016**: System MUST maintain two (or more) versions of chapter content for each proficiency level.
-- **FR-017**: System MUST render the appropriate content version based on the user's selected level.
-- **FR-018**: System MUST provide a UI button to switch proficiency level on-chapter.
+- **FR-015**: System MUST store user-selected proficiency level (Beginner, Intermediate, Advanced) per chapter in user profile. 🔄 **DEFERRED to Phase 3** (Requires user database)
+- **FR-016**: System MUST maintain two (or more) versions of chapter content for each proficiency level. 🔄 **DEFERRED to Phase 3** (Content authoring task for Phase 3+)
+- **FR-017**: System MUST render the appropriate content version based on the user's selected level. 🔄 **DEFERRED to Phase 3**
+- **FR-018**: System MUST provide a UI button to switch proficiency level on-chapter. 🔄 **DEFERRED to Phase 3**
 
 #### Internationalization (Urdu Translation - Bonus)
-- **FR-019**: System MUST provide a "Translate to Urdu" button on each chapter page.
-- **FR-020**: System MUST translate explanatory text while preserving code blocks and diagrams.
-- **FR-021**: System MUST display a notice indicating the content is translated; original English version must remain accessible.
+- **FR-019**: System MUST provide a "Translate to Urdu" button on each chapter page. 🔄 **DEFERRED to Phase 4+** (Content authoring phase)
+- **FR-020**: System MUST translate explanatory text while preserving code blocks and diagrams. 🔄 **DEFERRED to Phase 4+**
+- **FR-021**: System MUST display a notice indicating the content is translated; original English version must remain accessible. 🔄 **DEFERRED to Phase 4+**
 
 #### Backend API Architecture
-- **FR-022**: API MUST be implemented in FastAPI with Pydantic models for validation.
-- **FR-023**: API MUST expose endpoints for: user signup, signin, chapter retrieval, selected-text submission, chatbot query, and proficiency level updates.
-- **FR-024**: API MUST validate all incoming requests and return appropriate HTTP status codes (200, 400, 401, 404, 500).
-- **FR-025**: API MUST log all chatbot interactions for debugging and analysis.
+- **FR-022**: API MUST be implemented in FastAPI with Pydantic models for validation. ✅ **IMPLEMENTED** (Phase 2b)
+- **FR-023**: API currently exposes core endpoint: **POST /api/chat** (primary endpoint). Auth/chapters endpoints deferred to Phase 3. ⚠️ **SCOPE CHANGE** (Chat-Only MVP)
+  - ✅ **POST /api/chat**: Accept message, call RAG agent, return response with citations
+  - ✅ **GET /**: Health check endpoint
+  - 🔄 **DEFERRED**: `/auth/signup`, `/auth/signin`, `/chapters/{id}`, `/user/profile` (Phase 3+)
+- **FR-024**: API MUST validate all incoming requests and return appropriate HTTP status codes (200, 400, 401, 404, 500). ✅ **IMPLEMENTED**
+- **FR-025**: API MUST log all chatbot interactions for debugging and analysis. ⚠️ **DEFERRED** (Basic logging present; full audit trail deferred to Phase 3)
 
 #### Vector Database & RAG Pipeline
-- **FR-026**: System MUST use Qdrant Cloud (Free Tier) as the vector database.
-- **FR-027**: System MUST embed chapter text using OpenAI embeddings (or compatible service).
-- **FR-028**: System MUST store embeddings with metadata (chapter_id, section, text_chunk) in Qdrant.
-- **FR-029**: System MUST implement deterministic text chunking (fixed window size or semantic breaks) to ensure reproducible embeddings.
+- **FR-026**: System MUST use Qdrant Cloud (Free Tier) as the vector database. ✅ **IMPLEMENTED** (Phase 2b)
+- **FR-027**: System MUST embed chapter text using **Cohere embeddings** (`embed-english-v3.0` model, 1024 dimensions). ✅ **IMPLEMENTED** (Changed from OpenAI; Cohere API is used)
+- **FR-028**: System MUST store embeddings with metadata (chapter_id, section, text_chunk) in Qdrant. ✅ **IMPLEMENTED** (Phase 2b)
+- **FR-029**: System MUST implement deterministic text chunking (fixed window size or semantic breaks) to ensure reproducible embeddings. ✅ **IMPLEMENTED** (Deterministic chunking with max_chars=1000 in `embeding_helpers.py`)
 
 #### Deployment
 - **FR-030**: Docusaurus site MUST be deployed to GitHub Pages with automatic builds on push.
@@ -158,14 +177,23 @@ A learner prefers Urdu and wants to read the same chapter in their native langua
 - **FR-037**: Docusaurus site MUST include a searchable documentation index covering all chapters and learning outcomes.
 - **FR-038**: Chapter content MUST support embedded code blocks (with syntax highlighting) and diagrams/images stored in `docs/assets/` subdirectories.
 - **FR-039**: Docusaurus configuration MUST define a custom CSS theme matching Physical AI & Humanoid Robotics branding (dark/light mode support).
-- **FR-040**: Each chapter page MUST display a persistent RAG chatbot widget in a sidebar, maintaining selected-text context.
+- **FR-040**: Each chapter page MUST display a Custom React Chat Widget (floating button → chat interface) connected to the FastAPI backend `POST /api/chat` endpoint. ✅ **CUSTOM WIDGET** (NOT ChatKit SDK)
 - **FR-041**: Chapter markdown MUST support custom admonitions (callouts) for labs, exercises, and safety notices (e.g., `:::tip`, `:::lab`, `:::warning`).
 - **FR-042**: Docusaurus site MUST include metadata about module progress (e.g., "Chapter 3 of 5 in Module 2") visible to learners.
 
+#### Custom Chat Widget Frontend
+- **FR-043**: Custom React Chat Widget MUST be implemented as a TypeScript component with React hooks for state management.
+- **FR-044**: Widget MUST display a floating action button (FAB) in bottom-right corner that opens/closes the chat interface.
+- **FR-045**: Widget MUST include input field for user messages and display list of past messages with timestamps.
+- **FR-046**: Widget MUST call `POST /api/chat` endpoint with user message and handle JSON response (answer + citations).
+- **FR-047**: Widget MUST use Docusaurus CSS variables for theming (colors, fonts) to maintain visual consistency with the textbook.
+- **FR-048**: Widget MUST implement "typing dots" animation while waiting for backend response.
+- **FR-049**: Widget MUST be globally mounted via Docusaurus Root component swizzling (`src/theme/Root.tsx`).
+
 #### Reusable Skills
-- **FR-043**: Text chunking logic MUST be extracted as a reusable Skill (stored in `/skills/`).
-- **FR-044**: Chatbot context matching logic MUST be extracted as a reusable Skill.
-- **FR-045**: Skills MUST include documentation on usage and integration.
+- **FR-050**: Text chunking logic MUST be extracted as a reusable Skill (stored in `/skills/`).
+- **FR-051**: Chatbot context matching logic MUST be extracted as a reusable Skill.
+- **FR-052**: Skills MUST include documentation on usage and integration.
 
 ### Key Entities
 
@@ -195,13 +223,17 @@ A learner prefers Urdu and wants to read the same chapter in their native langua
 - **SC-013**: Breadcrumb navigation displays correctly on every chapter page (e.g., "Docs > Module 1 > Chapter 1").
 - **SC-014**: Search functionality returns accurate results when searching for chapter titles, learning outcomes, and tags.
 - **SC-015**: GitHub Pages deployment completes without errors on every git push; site loads in under 3 seconds.
+- **SC-016**: Custom React Chat Widget is visible on all chapter pages and responds to user input.
+- **SC-017**: Chat Widget successfully calls backend `POST /api/chat` endpoint and displays responses with citations.
+- **SC-018**: Chat Widget uses Docusaurus CSS variables for theming and maintains visual consistency with the textbook design.
+- **SC-019**: Chat Widget displays "typing dots" animation while waiting for backend response.
 
 ## Assumptions
 
 1. **Curriculum Content Availability**: The full 13-week Physical AI & Humanoid Robotics curriculum (with learning outcomes, diagrams, and code examples) will be provided or authored as part of this feature.
-2. **OpenAI API Key**: An OpenAI API key will be available for embeddings. Fallback to open-source embeddings (e.g., MiniLM) if needed.
-3. **Qdrant Cloud Access**: Free Tier Qdrant Cloud access will be provisioned; if unavailable, local Qdrant instance can substitute.
-4. **Neon Postgres Availability**: Neon Postgres account is available and credentials are stored securely (`.env` file).
+2. **Cohere API Key**: A Cohere API key is available for embeddings using `embed-english-v3.0` model (1024 dimensions). ✅ **IMPLEMENTED**
+3. **Qdrant Cloud Access**: Free Tier Qdrant Cloud access is provisioned; local Qdrant instance can substitute. ✅ **IMPLEMENTED**
+4. **Neon Postgres Availability**: Deferred to Phase 3. Phase 2b backend is stateless; no database required for MVP chat functionality.
 5. **Static Content Model**: Chapter content is authored once and rarely updated. Hot-reload/versioning of content is out of scope for MVP.
 6. **Single Language MVP**: English is the primary language. Urdu translation is bonus; auto-translation service (e.g., Google Translate API) is acceptable.
 7. **No Custom LLM**: The chatbot uses OpenAI's API (ChatGPT); no custom fine-tuning in MVP scope.
